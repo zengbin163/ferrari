@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.ferrari.FerrariUserDao">
+ 
+	<sql id="selectFerrariUserId">
+		select id id,
+			nick_name nickName,
+			mobile mobile,
+			is_admin isAdmin,
+			id_card  idCard,
+			province province,
+			city     city,
+			phone    phone,
+			address  address,
+			register_time registerTime,
+			header_url headerUrl,
+			modify_time modifyTime,
+			signature signature,
+			is_active isActive,
+			version version,
+			proxy_type proxyType,		
+			proxy_company proxyCompany,	 
+			proxy_guarantee proxyGuarantee,
+			proxy_target proxyTarget,	
+			proxy_sign proxySign,		
+			proxy_name proxyName,	
+			proxy_post proxyPost,		
+			proxy_weixin proxyWeixin,	
+			proxy_email proxyEmail,		 
+			proxy_card_photo1 proxyCardPhoto1,	
+			proxy_card_photo2 proxyCardPhoto2,	
+			remark remark			
+		from t_ferrari_user
+	</sql>
+
+	<select id="getFerrariUserByMobileAndPassword" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		select  t1.id id,
+				t1.nick_name nickName,
+				t1.mobile mobile,
+				t1.p_password pPassword,
+				t1.is_admin isAdmin,
+				t1.id_card  idCard,
+				t1.province province,
+				t1.city     city,
+				t1.phone    phone,
+				t1.address  address,
+				t1.register_time registerTime,
+				t1.header_url headerUrl,
+				t1.modify_time modifyTime,
+				t1.signature signature,
+				t1.is_active isActive,
+				t1.version version,
+		        t3.role_name roleName,
+		        t3.role_type roleType
+		FROM t_ferrari_user t1
+		LEFT JOIN t_ferrari_user_role t2 ON t1.id = t2.user_id
+		LEFT JOIN t_ferrari_role t3 ON t2.role_id = t3.id
+		where t1.mobile=#{mobile} and t1.password=#{password} and t1.is_active=1
+	</select>
+
+	<select id="getFerrariUserByMobile" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		select id id,
+			nick_name nickName,
+			mobile mobile,
+			password password,
+			is_admin isAdmin,
+			id_card  idCard,
+			province province,
+			city     city,
+			phone    phone,
+			address  address,
+			register_time registerTime,
+			header_url headerUrl,
+			modify_time modifyTime,
+			signature signature,
+			is_active isActive,
+			version version,
+			proxy_type proxyType,		
+			proxy_company proxyCompany,	 
+			proxy_guarantee proxyGuarantee,
+			proxy_target proxyTarget,	
+			proxy_sign proxySign,		
+			proxy_name proxyName,	
+			proxy_post proxyPost,		
+			proxy_weixin proxyWeixin,	
+			proxy_email proxyEmail,		 
+			proxy_card_photo1 proxyCardPhoto1,	
+			proxy_card_photo2 proxyCardPhoto2,	
+			remark remark			
+		from t_ferrari_user
+		where mobile=#{mobile} and is_active=1
+	</select>
+
+	<select id="getFerrariUserByMobileAndId" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		<include refid="selectFerrariUserId" />
+		where mobile=#{mobile} and id!=#{userId}
+	</select>
+
+	<select id="getFerrariUserById" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		<include refid="selectFerrariUserId" />
+		where id=#{id} and is_active=1
+	</select>
+
+	<select id="getFerrariUserInfoById" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		<include refid="selectFerrariUserId" />
+		where id=#{id}
+	</select>
+	
+	<select id="getAllFerrariUserList" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		<include refid="selectFerrariUserId" />
+		where is_active=1
+	</select>
+
+	<select id="getFerrariUserList" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		select  t1.id id,
+				t1.nick_name nickName,
+				t1.mobile mobile,
+				t1.p_password pPassword,
+				t1.is_admin isAdmin,
+				t1.id_card  idCard,
+				t1.province province,
+				t1.city     city,
+				t1.phone    phone,
+				t1.address  address,
+				t1.register_time registerTime,
+				t1.header_url headerUrl,
+				t1.modify_time modifyTime,
+				t1.signature signature,
+				t1.is_active isActive,
+				t1.version version,
+				t1.proxy_type proxyType,		
+				t1.proxy_company proxyCompany,	 
+				t1.proxy_guarantee proxyGuarantee,
+				t1.proxy_target proxyTarget,	
+				t1.proxy_sign proxySign,		
+				t1.proxy_name proxyName,	
+				t1.proxy_post proxyPost,		
+				t1.proxy_weixin proxyWeixin,	
+				t1.proxy_email proxyEmail,		 
+				t1.proxy_card_photo1 proxyCardPhoto1,	
+				t1.proxy_card_photo2 proxyCardPhoto2,	
+				t1.remark remark,			
+		        t3.role_name roleName,
+		        t3.role_type roleType
+		FROM t_ferrari_user t1
+		LEFT JOIN t_ferrari_user_role t2 ON t1.id = t2.user_id
+		LEFT JOIN t_ferrari_role t3 ON t2.role_id = t3.id
+		<where>
+		    <if test="isActive!=null">
+		    	t1.is_active = #{isActive}
+		    </if>	
+			<if test="nickName!=null">
+				and t1.nick_name like CONCAT('%',#{nickName},'%' )
+			</if>
+			<if test="mobile!=null">
+				and t1.mobile=#{mobile}
+			</if>
+			<if test="province!=null">
+				and t1.province=#{province}
+			</if>
+			<if test="city!=null">
+				and t1.city=#{city}
+			</if>
+			<if test="roleType!=null">
+				and t3.role_type=#{roleType}
+			</if>
+		</where>
+	</select>
+	<select id="countFerrariUserList" resultType="int">
+		SELECT count(*) 
+		FROM t_ferrari_user t1
+		LEFT JOIN t_ferrari_user_role t2 ON t1.id = t2.user_id
+		LEFT JOIN t_ferrari_role t3 ON t2.role_id = t3.id
+		<where>
+		    <if test="isActive!=null">
+		    	t1.is_active = #{isActive}
+		    </if>	
+			<if test="nickName!=null">
+				and t1.nick_name like CONCAT('%',#{nickName},'%' )
+			</if>
+			<if test="mobile!=null">
+				and t1.mobile=#{mobile}
+			</if>
+			<if test="province!=null">
+				and t1.province=#{province}
+			</if>
+			<if test="city!=null">
+				and t1.city=#{city}
+			</if>
+			<if test="roleType!=null">
+				and t3.role_type=#{roleType}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertFerrariUser" parameterType="com.home.ferrari.vo.ferrari.user.FerrariUser" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_ferrari_user (
+			nick_name,
+			mobile,
+			password,
+			p_password,
+			id_card,
+			province,
+			city,
+			phone,
+			address,
+			is_admin,
+			register_time,
+			header_url,
+			modify_time,
+			signature,
+			version,
+			is_active,
+			proxy_type,		
+			proxy_company,	 		
+			proxy_guarantee,	 	
+			proxy_target,	 		
+			proxy_sign,				
+			proxy_name,				
+			proxy_post,				
+			proxy_weixin,	 		
+			proxy_email,	  		
+			proxy_card_photo1,	 	
+			proxy_card_photo2,	 	
+			remark 				
+		)
+		VALUES(
+			#{nickName},
+			#{mobile},
+			#{password},
+			#{pPassword},
+			#{idCard},
+			#{province},
+			#{city},
+			#{phone},
+			#{address},
+			#{isAdmin},
+			NOW(),
+			#{headerUrl},
+			NOW(),
+			#{signature},
+			1,
+			1,
+			#{proxyType},		
+			#{proxyCompany},	 
+			#{proxyGuarantee},
+			#{proxyTarget},	
+			#{proxySign},		
+			#{proxyName},	
+			#{proxyPost},		
+			#{proxyWeixin},	
+			#{proxyEmail},		 
+			#{proxyCardPhoto1},	
+			#{proxyCardPhoto2},	
+			#{remark}			
+		)
+	</insert>
+	
+	<update id="updateFerrariUser" parameterType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		update t_ferrari_user set modify_time = NOW()
+		<if test="isAdmin!=null">
+			,is_admin = #{isAdmin}
+		</if>
+		<if test="mobile!=null">
+			,mobile = #{mobile}
+		</if>
+		<if test="nickName!=null">
+			,nick_name = #{nickName}
+		</if>
+		<if test="password!=null">
+			,password = #{password}
+		</if>
+		<if test="pPassword!=null">
+			,p_password = #{pPassword}
+		</if>
+		<if test="headerUrl!=null">
+			,header_url = #{headerUrl}
+		</if>
+		<if test="signature!=null">
+			,signature = #{signature}
+		</if>
+		<if test="address!=null">
+			,address = #{address}
+		</if>
+		<if test="idCard!=null">
+			,id_card = #{idCard}
+		</if>
+		<if test="province!=null">
+			,province = #{province}
+		</if>
+		<if test="city!=null">
+			,city = #{city}
+		</if>
+		<if test="phone!=null">
+			,phone = #{phone}
+		</if>
+		<if test="version!=null">
+			,version = #{version}
+		</if>
+		<if test="isActive!=null">
+			,is_active = #{isActive}
+		</if>
+		<if test="proxyType!=null">
+			,proxy_type = #{proxyType}
+		</if>
+		<if test="proxyCompany!=null">
+			,proxy_company = #{proxyCompany}
+		</if>
+		<if test="proxyGuarantee!=null">
+			,proxy_guarantee = #{proxyGuarantee}
+		</if>
+		<if test="proxyTarget!=null">
+			,proxy_target = #{proxyTarget}
+		</if>
+		<if test="proxySign!=null">
+			,proxy_sign = #{proxySign}
+		</if>
+		<if test="proxyName!=null">
+			,proxy_name = #{proxyName}
+		</if>
+		<if test="proxyPost!=null">
+			,proxy_post = #{proxyPost}
+		</if>
+		<if test="proxyWeixin!=null">
+			,proxy_weixin = #{proxyWeixin}
+		</if>
+		<if test="proxyEmail!=null">
+			,proxy_email = #{proxyEmail}
+		</if>
+		<if test="proxyCardPhoto1!=null">
+			,proxy_card_photo1 = #{proxyCardPhoto1}
+		</if>
+		<if test="proxyCardPhoto2!=null">
+			,proxy_card_photo2 = #{proxyCardPhoto2}
+		</if>
+		<if test="remark!=null">
+			,remark = #{remark}
+		</if>
+		<![CDATA[
+			where id = #{id} and version < #{version} 
+		]]>	
+	</update>
+	
+	<select id="sumProxyUserCount" resultType="map">
+		SELECT
+			proxy_type proxyType,
+			count(*) sum
+		FROM
+			t_ferrari_user
+		WHERE
+			proxy_type IS NOT NULL
+		AND is_active = 1
+		GROUP BY
+			proxy_type
+	</select>
+	
+	<select id="getFerrariUserByProvinceCity" resultType="com.home.ferrari.vo.ferrari.user.FerrariUser">
+		<include refid="selectFerrariUserId" />
+		where province=#{province} 
+			and proxy_type=#{proxyType}
+			<if test="city!=null">
+				and city = #{city}
+			</if>
+			<if test="city==null">
+				and city is null
+			</if>
+	</select>
+	
+</mapper>

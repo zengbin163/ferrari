@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.account.AccountHeaderDao">
+
+	<insert id="insertAccountHeader" parameterType="com.home.ferrari.vo.account.AccountHeader" useGeneratedKeys="true" keyProperty="finalId">
+		insert into t_account_header(
+			final_no,
+			total_fee,
+			payment_date,
+			account_status,
+			create_time,
+			modify_time
+		) values (
+			#{finalNo},
+			#{totalFee},
+			#{paymentDate},
+			#{accountStatus},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertAccountListBatch" parameterType="com.home.ferrari.vo.account.AccountList">
+		insert into t_account_list(
+			final_no,
+			serial_no,
+			product_name,
+			check_time,
+			shop_id,
+			shop_name,
+			city,
+			buyer_nick,
+			car_model,
+			settle_fee,
+			create_time,
+			modify_time
+		) values 
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	    (
+	        #{item.finalNo},
+	        #{item.serialNo},
+	        #{item.productName},
+	        #{item.checkTime},
+	        #{item.shopId},
+	        #{item.shopName},
+	        #{item.city},
+	        #{item.buyerNick},
+	        #{item.carModel},
+	        #{item.settleFee},
+			NOW(),
+			NOW()
+	    )  
+	    </foreach>  
+	</insert>
+	
+	<insert id="insertAccountShopBatch" parameterType="com.home.ferrari.vo.account.AccountShop">
+		insert into t_account_shop(
+			final_no,
+			shop_id,
+			shop_name,
+			account_status,
+			create_time,
+			modify_time
+		) values
+	    <foreach collection="list" item="item" index="index" separator="," >  
+		(
+			#{item.finalNo},
+			#{item.shopId},
+			#{item.shopName},
+			#{item.accountStatus},
+			NOW(),
+			NOW()
+		)
+		</foreach>
+	</insert>
+	
+	<sql id="getAccountHeader">
+		select id finalId,
+		       final_no finalNo,
+		       total_fee totalFee,
+		       payment_date paymentDate,
+		       account_status accountStatus,
+		       create_time createTime,
+		       modify_time modifyTime
+		from t_account_header
+	</sql>
+	
+	<sql id="getAccountList">
+		select id serialId,
+			   final_no finalNo,
+			   serial_no serialNo,
+			   product_name productName,
+			   check_time checkTime,
+			   shop_id shopId,
+			   shop_name shopName,
+			   city city,
+			   buyer_nick buyerNick,
+			   car_model carModel,
+			   settle_fee settleFee,
+			   create_time createTime,
+			   modify_time modifyTime
+	    from t_account_list
+	</sql>
+
+	<sql id="getAccountShop">
+		select id id,
+			   final_no finalNo,
+			   shop_id shopId,
+			   shop_name shopName,
+			   account_status accountStatus,
+			   IFNULL(account_fee,0) accountFee,
+			   logistics_company logisticsCompany,
+			   logistics_no logisticsNo,
+			   logistics_remark	logisticsRemark,
+			   finance_url financeUrl,
+			   create_time createTime,
+			   modify_time modifyTime
+	    from t_account_shop
+	</sql>
+	
+	<select id="getAccountHeaderByFinalNo" resultType="com.home.ferrari.vo.account.AccountHeader">
+	    <include refid="getAccountHeader" />
+		where final_no = #{finalNo}       
+	</select>
+	
+	<select id="getAccountHeaderList" resultType="com.home.ferrari.vo.account.AccountHeader">
+		<include refid="getAccountHeader" />
+	</select>
+	<select id="countAccountHeaderList" resultType="int">
+		select count(*)
+		from t_account_header
+	</select>
+	
+	<select id="getAccountListBySerialNo" resultType="com.home.ferrari.vo.account.AccountList">
+	    <include refid="getAccountList" />
+	    where final_no=#{finalNo} 
+	    	and serial_no=#{serialNo}
+	</select>
+
+	<select id="countAccountShopList" resultType="int">
+	    select count(*) from t_account_shop
+	    <where>
+	    	<if test="finalNo!=null">
+	    		final_no=#{finalNo}
+	    	</if>
+	    	<if test="accountStatus!=null">
+	    		and account_status=#{accountStatus}
+	    	</if>
+	    </where>
+	</select>
+	
+	<insert id="insertOrUpdateAccountInvoice" parameterType="com.home.ferrari.vo.account.AccountInvoice">
+			INSERT IGNORE INTO t_account_invoice (
+			           id,
+					   invoice_title,
+					   tax_identify,
+					   billing_address,
+					   billing_account,
+					   billing_phone,
+					   receiver_address,
+					   receiver_phone,
+					   account_remark,
+					   create_time,
+					   modify_time
+			)  VALUES (
+			           1,
+					   #{invoiceTitle},
+					   #{taxIdentify},
+					   #{billingAddress},
+					   #{billingAccount},
+					   #{billingPhone},
+					   #{receiverAddress},
+					   #{receiverPhone},
+					   #{accountRemark},
+					   NOW(),
+					   NOW()
+			)   ON DUPLICATE KEY UPDATE 
+				<if test="invoiceTitle != null">
+					invoice_title = #{invoiceTitle},
+				</if>
+				<if test="taxIdentify != null">
+					tax_identify = #{taxIdentify},
+				</if>
+				<if test="billingAddress != null">
+					billing_address = #{billingAddress},
+				</if>
+				<if test="billingAccount != null">
+					billing_account = #{billingAccount},
+				</if>
+				<if test="billingPhone != null">
+					billing_phone = #{billingPhone},
+				</if>
+				<if test="receiverAddress != null">
+					receiver_address = #{receiverAddress},
+				</if>
+				<if test="receiverPhone != null">
+					receiver_phone = #{receiverPhone},
+				</if>
+				<if test="accountRemark != null">
+					account_remark = #{accountRemark},
+				</if>
+				modify_time = NOW()
+	</insert>
+	
+	<select id="getAccountInvoiceById" resultType="com.home.ferrari.vo.account.AccountInvoice">
+	     select  id id,
+				 invoice_title invoiceTitle,
+				 tax_identify taxIdentify,
+				 billing_address billingAddress,
+				 billing_account billingAccount,
+				 billing_phone billingPhone,
+				 receiver_address receiverAddress,
+				 receiver_phone receiverPhone,
+				 account_remark accountRemark,
+				 create_time createTime,
+				 modify_time modifyTime
+          from t_account_invoice
+          where id = #{id}
+	</select>
+	
+	<select id="getAccountShopGroupList" resultType="com.home.ferrari.vo.account.AccountShop">
+		SELECT
+			t.shop_id shopId,
+			t.shop_name shopName,
+			sum(t.settle_fee) shopSettleFee
+		FROM
+			t_account_list t
+		<if test="accountStatus!=null">
+			join t_account_shop x on t.final_no=x.final_no and t.shop_id=x.shop_id
+		</if>
+	    <where>
+			<if test="finalNo!=null">
+				t.final_no = #{finalNo}
+			</if>
+			<if test="accountStatus!=null">
+				and x.account_status = #{accountStatus}
+			</if>
+		</where>
+		GROUP BY
+			t.shop_id,
+			t.shop_name
+	</select>
+	<select id="countAccountShopGroupList" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			(
+				SELECT
+					t.shop_id shopId,
+					t.shop_name shopName,
+					sum(t.settle_fee) shopSettleFee
+				FROM
+					t_account_list t
+				<if test="accountStatus!=null">
+					join t_account_shop x on t.final_no=x.final_no and t.shop_id=x.shop_id
+				</if>
+			    <where>
+					<if test="finalNo!=null">
+						t.final_no = #{finalNo}
+					</if>
+					<if test="accountStatus!=null">
+						and x.account_status = #{accountStatus}
+					</if>
+				</where>
+				GROUP BY
+					t.shop_id,
+					t.shop_name
+			) x
+	</select>
+	
+	<select id="getAccountShopById" resultType="com.home.ferrari.vo.account.AccountShop">
+		<include refid="getAccountShop" />
+		where id = #{id}
+	</select>
+	
+	<select id="getAccountShopByShopId" resultType="com.home.ferrari.vo.account.AccountShop">
+		<include refid="getAccountShop" />
+		<where>
+			<if test="finalNo!=null">
+				final_no = #{finalNo}
+			</if>
+			<if test="shopId!=null">
+				and shop_id = #{shopId}
+			</if>
+		</where>
+		order by modify_time DESC
+		limit 1
+	</select>
+	
+	<select id="getAccountListByShopId" resultType="com.home.ferrari.vo.account.AccountList">
+	    <include refid="getAccountList" />
+	    where final_no=#{finalNo} and shop_id = #{shopId}
+	</select>
+	<select id="countAccountListByShopId" resultType="int">
+	    select count(*)
+	    from t_account_list
+	    where final_no=#{finalNo} and shop_id = #{shopId}
+	</select>
+	
+	<select id="sumShopAccountSettleFeeByShopId" resultType="java.math.BigDecimal">
+		select sum(t.settle_fee) 
+		from t_account_list t 
+		where t.shop_id = #{shopId}
+		 	and t.final_no=#{finalNo}
+	</select>
+	
+	<update id="updateAccountHeaderByFinalNo" parameterType="com.home.ferrari.vo.account.AccountHeader">
+		update t_account_header 
+		 set modify_time = now()
+		<if test="accountStatus!=null">
+			,account_status=#{accountStatus}
+		</if>
+		where final_no=#{finalNo}
+	</update>
+	<update id="updateAccountShopByFinalNo" parameterType="com.home.ferrari.vo.account.AccountShop">
+		update t_account_shop 
+		 set modify_time = now()
+		<if test="accountStatus!=null">
+			,account_status=#{accountStatus}
+		</if>
+		where final_no=#{finalNo}
+	</update>
+	<update id="updateAccountShop" parameterType="com.home.ferrari.vo.account.AccountShop">
+		update t_account_shop 
+		 set modify_time = now()
+		<if test="accountStatus!=null">
+			,account_status=#{accountStatus}
+		</if>
+		<if test="accountFee!=null">
+			,account_fee=#{accountFee}
+		</if>
+		<if test="financeUrl!=null">
+			,finance_url=#{financeUrl}
+		</if>
+		<if test="logisticsCompany!=null">
+			,logistics_company=#{logisticsCompany}
+		</if>
+		<if test="logisticsNo!=null">
+			,logistics_no=#{logisticsNo}
+		</if>
+		<if test="logisticsRemark!=null">
+			,logistics_remark=#{logisticsRemark}
+		</if>
+		where id=#{id}
+	</update>
+	
+	<!-- the shop -->
+	<select id="getShopAccountList" resultType="com.home.ferrari.vo.account.AccountShop">
+		SELECT
+			t.shop_id shopId,
+			t.shop_name shopName,
+			tt.payment_date paymentDate,
+			tt.final_no finalNo,
+			sum(t.settle_fee) shopSettleFee
+		FROM
+			t_account_list t
+		JOIN t_account_header tt ON t.final_no = tt.final_no
+		WHERE t.shop_id = #{shopId}
+		GROUP BY
+			t.final_no,
+			t.shop_id,
+			t.shop_name
+	</select>
+	<select id="countShopAccountList" resultType="int">
+	   SELECT count(*) FROM (
+			SELECT
+				t.shop_id shopId,
+				t.shop_name shopName,
+				tt.payment_date paymentDate,
+				tt.final_no finalNo,
+				sum(t.settle_fee) shopSettleFee
+			FROM
+				t_account_list t
+			JOIN t_account_header tt ON t.final_no = tt.final_no
+			WHERE t.shop_id = #{shopId}
+			GROUP BY
+				t.final_no,
+				t.shop_id,
+				t.shop_name
+		) x
+	</select>
+	<select id="getUNFinishAccountShopByFinalNo" resultType="int">
+		select count(*) 
+			from t_account_shop
+		where final_no=#{finalNo} 
+			and account_status!=604
+	</select>
+	<select id="sumAccountFeeByFinalNo" resultType="java.math.BigDecimal">
+		select sum(account_fee) 
+			from t_account_shop 
+		where final_no=#{finalNo}
+	</select>
+	
+	<insert id="insertOrUpdateAccountUpload" parameterType="com.home.ferrari.vo.account.AccountUpload">
+		INSERT IGNORE INTO t_account_upload(
+			final_no,
+			success,
+			fail,
+			detail,
+			create_time,
+			modify_time
+		) VALUES (
+			#{finalNo},
+			#{success},
+			#{fail},
+			#{detail},
+			NOW(),
+			NOW()
+	    ) ON DUPLICATE KEY UPDATE 
+			<if test="finalNo != null">
+				final_no = #{finalNo},
+			</if>
+			<if test="success != null">
+				success = #{success},
+			</if>
+			<if test="fail != null">
+				fail = #{fail},
+			</if>
+			<if test="detail != null">
+				detail = #{detail},
+			</if>
+			modify_time = NOW()
+	</insert>
+	
+	<select id="getAccountUploadDetail" resultType="com.home.ferrari.vo.account.AccountUpload">
+		select  final_no finalNo,
+				IFNULL(success,0) success,
+				IFNULL(fail,0) fail,
+				detail detail,
+				create_time createTime,
+				modify_time modifyTime
+		from t_account_upload
+		where final_no = #{finalNo}
+	</select>
+</mapper>

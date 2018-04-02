@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.crmdao.crm.CrmAdminReportDao">
+ 
+	<select id="getCrmProvinceReport" resultType="com.home.ferrari.vo.crm.CrmProvinceCount">
+		SELECT
+			t1.crm_province province,
+			count(*) adminSum
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+			AND t2.role_type = 2 and t1.is_active=1
+		GROUP BY
+			t1.crm_province
+	</select>
+	
+	<select id="getCrmProvinceBizAdmin" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		JOIN t_crm_user t3 ON t1.admin_id = t3.id
+		WHERE
+			t2.role_type = 3
+		AND t1.is_active = 1
+		AND t3.is_active = 1
+		AND t3.crm_province = #{province}
+	</select>
+
+	<select id="getCrmProvinceCustomer" resultType="int">
+		SELECT
+			count(DISTINCT t1.id)
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_user t2 ON (
+			t1.crm_user_id = t2.id
+			OR t1.crm_user_id = t2.admin_id
+		)
+		JOIN t_crm_user t3 ON t2.admin_id = t3.id
+		WHERE
+			t1.upload_status != 0
+		AND t2.is_active = 1
+		AND t3.is_active = 1
+		AND t3.crm_province = #{province}
+	</select>
+	
+	<select id="getCurrentMonthLoginReport" resultType="map">
+		SELECT
+			month(t2.login_time) mon,
+		    count(*) sum
+		FROM
+			t_crm_user t1
+		JOIN t_crm_login_log t2 ON t1.id = t2.crm_user_id
+		AND t1.is_active = 1
+		AND year(t2.login_time) = year(now())
+		group by month(t2.login_time)
+		order by month(t2.login_time) ASC
+	</select>
+
+	<select id="getCurrentMonthNewUserReport" resultType="map">
+		SELECT
+			month(t1.register_time) mon,
+		    count(*) sum
+		FROM
+			t_crm_user t1
+		where t1.is_active = 1
+		AND year(t1.register_time) = year(now())
+		group by month(t1.register_time)
+		order by month(t1.register_time) ASC
+	</select>
+
+	<select id="countTotalCustomer" resultType="int">
+		select count(*) from t_crm_customer where upload_status!=0
+	</select>
+	
+	<select id="getCrmCompanyListReport" resultType="com.home.ferrari.vo.crm.CrmCompany">
+		SELECT
+			t1.id adminId,
+			t1.crm_shop_name crmShopName,
+			t1.crm_shop_company crmShopCompany,
+		  	count(*) adminSum,
+		  	(select count(*) from t_crm_user x where x.is_active=1 and x.admin_id=t1.id) bizSum,
+			(SELECT count(*) FROM t_crm_customer x WHERE x.upload_status!=0 and ( x.crm_user_id  in (select x1.id from t_crm_user x1 where x1.admin_id=t1.id and x1.is_active=1) or x.crm_user_id = t1.id)) totalCustSum,
+			(SELECT count(*) FROM t_crm_customer x WHERE x.upload_status!=0 and x.purpose='F' and ( x.crm_user_id  in (select x1.id from t_crm_user x1 where x1.admin_id=t1.id and x1.is_active=1) or x.crm_user_id = t1.id)) FTotalCustSum
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		WHERE
+			t1.is_active = 1
+		AND t2.role_type = 2
+			<if test="crmProvince!=null">
+				and t1.crm_province = #{crmProvince}
+			</if>
+			<if test="crmCity!=null">
+				and t1.crm_city = #{crmCity}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+		GROUP BY
+			t1.id,
+			t1.crm_shop_name,
+			t1.crm_shop_company
+	</select>
+	<select id="countCrmCompanyListReport" resultType="int">
+	  select count(*) from (
+			SELECT
+				t1.id adminId,
+				t1.crm_shop_name crmShopName,
+				t1.crm_shop_company crmShopCompany,
+			    count(*) adminSum		
+			FROM
+				t_crm_user t1
+			JOIN t_crm_role t2 ON t1.role_id = t2.id
+			WHERE
+				t1.is_active = 1
+			AND t2.role_type = 2
+			<if test="crmProvince!=null">
+				and t1.crm_province = #{crmProvince}
+			</if>
+			<if test="crmCity!=null">
+				and t1.crm_city = #{crmCity}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+			GROUP BY
+				t1.id,
+				t1.crm_shop_name,
+				t1.crm_shop_company
+		) t
+	</select>
+	
+	<select id="getAvgCustomerByAdminid" resultType="int">
+		SELECT
+			ceil(avg(sum))
+		FROM
+			(
+				SELECT
+					DATE_FORMAT(t.login_time, '%Y-%m-%d') times,
+					count(*) sum
+				FROM
+					t_crm_login_log t
+				WHERE
+					t.crm_user_id IN (
+						SELECT
+							x1.id
+						FROM
+							t_crm_user x1
+						WHERE
+							x1.admin_id = #{adminId}
+						AND x1.is_active = 1
+					)
+					OR t.crm_user_id = #{adminId}
+				GROUP BY
+					DATE_FORMAT(t.login_time, '%Y-%m-%d')
+			) xx
+	</select>
+</mapper>

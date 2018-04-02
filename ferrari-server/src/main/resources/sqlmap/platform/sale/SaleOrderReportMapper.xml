@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.sale.SaleOrderReportDao">
+	<select id="getFerrariTotalReport" resultType="map">
+		select count(*) orderTotal,
+			   IFNULL(sum(payment),0) orderTotalAmount
+	    from t_sale_order t1 
+	    	left join t_tesla_shop t2 on t1.shop_id = t2.id
+	    where t1.shop_order_status > 0
+	    <!--   and t1.shop_id is not null and t2.shop_status!=404   -->
+    	<if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>   
+        <if test="taobaoSellerNick!=null">
+			and t1.seller_nick=#{taobaoSellerNick}
+        </if>
+        <if test="province!=null">
+        	and t2.province=#{province}
+        </if>
+        <if test="city!=null">
+        	and t2.city=#{city}
+        </if>
+		<if test="shopType!=null">
+			and t2.shop_type=#{shopType}
+        </if>
+        <if test="abcType!=null">
+			and t2.abc_type=#{abcType}
+        </if>
+	</select>
+
+	<select id="getFerrariProvinceReport" resultType="map">
+		SELECT
+			t2.province province,
+			count(*) orderTotal,
+			IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+			t_tesla_shop t2
+		WHERE
+			t1.shop_id = t2.id
+			and t1.shop_order_status > 0
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		    </if>    
+	        <if test="province!=null">
+				and t2.province=#{province}
+	        </if>
+		GROUP BY t2.province
+		ORDER BY count(*) DESC,sum(t1.payment) DESC
+	</select>
+
+	<select id="countFerrariProvinceReport" resultType="int">
+		SELECT count(*) from (
+			SELECT
+				t2.province province,
+				count(*) orderTotal,
+				IFNULL(sum(t1.payment),0) orderTotalAmount
+			FROM
+				t_sale_order t1,
+				t_tesla_shop t2
+			WHERE
+				t1.shop_id = t2.id
+				and t1.shop_order_status > 0
+		        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+			        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+			    </if>    
+		        <if test="province!=null">
+					and t2.province=#{province}
+		        </if>
+			GROUP BY t2.province
+		) t0		
+	</select>
+
+	<select id="getFerrariCityReport" resultType="map">
+		SELECT
+			t2.city city,
+			count(*) orderTotal,
+			IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+			t_tesla_shop t2
+		WHERE
+			t1.shop_id = t2.id
+			and t1.shop_order_status > 0
+	        <if test="province!=null">
+				and t2.province=#{province}
+	        </if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	        </if>
+		GROUP BY t2.city
+		ORDER BY count(*) DESC,sum(t1.payment) DESC
+	</select>
+
+	<select id="countFerrariCityReport" resultType="int">
+		SELECT count(*) from (
+			SELECT
+				t2.city city,
+				count(*) orderTotal,
+				IFNULL(sum(t1.payment),0) orderTotalAmount
+			FROM
+				t_sale_order t1,
+				t_tesla_shop t2
+			WHERE
+				t1.shop_id = t2.id
+				and t1.shop_order_status > 0
+		        <if test="province!=null">
+					and t2.province=#{province}
+		        </if>
+		        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+			        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		        </if>
+			GROUP BY t2.city
+		) t0
+	</select>
+	
+	<select id="getFerrariShopReport" resultType="map">
+		SELECT
+      		t2.id shopId,
+			t2.shop_name shopName,
+			count(*) orderTotal,
+			IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+			t_tesla_shop t2
+		WHERE
+			t1.shop_id = t2.id
+			and t1.shop_order_status > 0
+			<!--  and t2.shop_status!=404   -->
+	        <if test="province!=null">
+				and t2.province=#{province}
+	        </if>
+	        <if test="city!=null">
+				and t2.city=#{city}
+	        </if>
+	        <if test="shopId!=null and shopId!=0">
+				and t2.id=#{shopId}
+	        </if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		    </if>    
+	        <if test="taobaoSellerNick!=null">
+				and t1.seller_nick=#{taobaoSellerNick}
+	        </if>
+	        <if test="shopName!=null">
+				and t2.shop_name like CONCAT('%',#{shopName},'%' )
+	        </if>
+			<if test="shopType!=null">
+				and t2.shop_type=#{shopType}
+	        </if>
+	        <if test="abcType!=null">
+				and t2.abc_type=#{abcType}
+	        </if>
+	        GROUP BY t2.shop_name,t2.id
+        <choose>  
+            <when test="orderBy==0">  
+				ORDER BY count(*) DESC,sum(t1.payment) DESC
+            </when>
+            <when test="orderBy==1">  
+				ORDER BY sum(t1.payment) DESC,count(*) DESC
+            </when>
+            <otherwise>  
+            </otherwise>  
+        </choose>  
+	</select>
+
+	<select id="countFerrariShopReport" resultType="int">
+	  SELECT count(*) from (
+		SELECT
+      		t2.id shopId,
+			t2.shop_name shopName,
+			count(*) orderTotal,
+			IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+			t_tesla_shop t2
+		WHERE
+			t1.shop_id = t2.id
+			and t1.shop_order_status > 0
+			<!--  and t2.shop_status!=404   -->
+	        <if test="province!=null">
+				and t2.province=#{province}
+	        </if>
+	        <if test="city!=null">
+				and t2.city=#{city}
+	        </if>
+	        <if test="shopId!=null and shopId!=0">
+				and t2.id=#{shopId}
+	        </if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		    </if>    
+	        <if test="taobaoSellerNick!=null">
+				and t1.seller_nick=#{taobaoSellerNick}
+	        </if>
+	        <if test="shopName!=null">
+				and t2.shop_name like CONCAT('%',#{shopName},'%' )
+	        </if>
+			<if test="shopType!=null">
+				and t2.shop_type=#{shopType}
+	        </if>
+	        <if test="abcType!=null">
+				and t2.abc_type=#{abcType}
+	        </if>
+	        GROUP BY t2.shop_name,t2.id
+	   ) t0	
+	</select>
+
+	<select id="getFerrariProductReport" resultType="map">
+		SELECT
+	        t2.product_name productName,
+		    count(*) orderTotal,
+		    IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+	      	t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE t1.shop_id = t3.id and t2.biz_order_id=t1.biz_order_id
+		and t1.shop_order_status > 0
+        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>    
+        <if test="shopId!=null and shopId!=0">
+			and t3.id=#{shopId}
+        </if>
+		<if test="productName!=null">
+			and t2.product_name like CONCAT('%',#{productName},'%' )
+		</if>
+        <if test="taobaoSellerNick!=null">
+			and t1.seller_nick=#{taobaoSellerNick}
+        </if>
+		GROUP BY t2.product_name
+        <choose>  
+            <when test="orderBy==0">  
+				ORDER BY count(*) DESC
+            </when>
+            <when test="orderBy==1">  
+				ORDER BY sum(t1.payment) DESC
+            </when>
+            <otherwise>  
+            </otherwise>  
+        </choose>  
+	</select>
+
+	<select id="countFerrariProductReport" resultType="int">
+	  SELECT count(*) from (
+		SELECT
+	        t2.product_name productName,
+		    count(*) orderTotal,
+		    IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+	      	t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE t1.shop_id = t3.id and t2.biz_order_id=t1.biz_order_id
+		and t1.shop_order_status > 0
+        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>    
+        <if test="shopId!=null and shopId!=0">
+			and t3.id=#{shopId}
+        </if>
+		<if test="productName!=null">
+			and t2.product_name like CONCAT('%',#{productName},'%' )
+		</if>
+        <if test="taobaoSellerNick!=null">
+			and t1.seller_nick=#{taobaoSellerNick}
+        </if>
+		GROUP BY t2.product_name
+	  )	t0	  
+	</select>
+	
+	<select id="getFerrariProvinceProductReport" resultType="map">
+		SELECT
+	        t3.province province,
+		    count(*) orderTotal,
+		    IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+	      	t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE t1.shop_id = t3.id and t2.biz_order_id=t1.biz_order_id
+		and t1.shop_order_status > 0
+        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>    
+		<if test="productName!=null">
+			and t2.product_name=#{productName}
+		</if>
+		GROUP BY t3.province
+		ORDER BY count(*) DESC,sum(t1.payment) DESC
+	</select>
+
+	<select id="countFerrariProvinceProductReport" resultType="int">
+	  SELECT count(*) from (
+			SELECT
+		        t3.province province,
+			    count(*) orderTotal,
+			    IFNULL(sum(t1.payment),0) orderTotalAmount
+			FROM
+				t_sale_order t1,
+		      	t_sale_orderdetail t2,
+				t_tesla_shop t3
+			WHERE t1.shop_id = t3.id and t2.biz_order_id=t1.biz_order_id
+			and t1.shop_order_status > 0
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		    </if>    
+			<if test="productName!=null">
+				and t2.product_name=#{productName}
+			</if>
+			GROUP BY t3.province
+	  )	t0	  
+	</select>
+	<select id="getFerrariShopProductReport" resultType="map">
+		SELECT
+	        t3.shop_name shopName,
+	        t3.id shopId,
+		    count(*) orderTotal,
+		    IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+	      	t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE t1.shop_order_status > 0  
+			and t1.shop_id = t3.id 
+			and t2.biz_order_id=t1.biz_order_id
+        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>    
+		<if test="productName!=null">
+			and t2.product_name=#{productName}
+		</if>
+		GROUP BY t3.shop_name
+		ORDER BY count(*) DESC,sum(t1.payment) DESC
+	</select>
+
+	<select id="countFerrariShopProductReport" resultType="int">
+	  SELECT count(*) from (
+			SELECT
+		        t3.shop_name shopName,
+			    count(*) orderTotal,
+			    IFNULL(sum(t1.payment),0) orderTotalAmount
+			FROM
+				t_sale_order t1,
+		      	t_sale_orderdetail t2,
+				t_tesla_shop t3
+			WHERE t1.shop_order_status > 0  
+			and t1.shop_id = t3.id 
+			and t2.biz_order_id=t1.biz_order_id
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+		    </if>    
+			<if test="productName!=null">
+				and t2.product_name=#{productName}
+			</if>
+			GROUP BY t3.shop_name
+	  )	t0	  
+	</select>
+	
+	<select id="getFerrariProductTotalReport" resultType="map">
+		SELECT
+	        t2.product_name productName,
+		    count(*) orderTotal,
+		    IFNULL(sum(t1.payment),0) orderTotalAmount
+		FROM
+			t_sale_order t1,
+	      	t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE t1.shop_order_status > 0 
+		and t1.shop_id = t3.id 
+		and t2.biz_order_id = t1.biz_order_id
+		and t2.product_name = #{productName}
+        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+	        and t1.order_created BETWEEN #{orderCreatedBegin} and date_add(#{orderCreatedEnd},interval 1 day)
+	    </if>    
+	</select>
+	
+	<select id="getSaleOrderListDetailByShopId" resultType="map">
+		SELECT
+			t1.buyer_nick buyerNick,
+			t1.biz_order_id bizOrderId,
+			t1.seller_nick sellerNick,
+			t1.order_created orderCreated,
+			t1.taobao_order_status taobaoOrderStatus,
+			t3.shop_name shopName
+		FROM
+			t_sale_order t1,
+			t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE
+			t1.shop_id = t3.id
+		and t1.shop_order_status > 0	
+		AND t2.biz_order_id = t1.biz_order_id
+		AND t1.order_created BETWEEN #{orderCreatedBegin} AND date_add(#{orderCreatedEnd},INTERVAL 1 DAY)
+		AND t3.id = #{shopId}
+	</select>
+	<select id="countSaleOrderListDetailByShopId" resultType="int">
+		SELECT count(*)
+		FROM
+			t_sale_order t1,
+			t_sale_orderdetail t2,
+			t_tesla_shop t3
+		WHERE
+			t1.shop_id = t3.id
+		and t1.shop_order_status > 0	
+		AND t2.biz_order_id = t1.biz_order_id
+		AND t1.order_created BETWEEN #{orderCreatedBegin} AND date_add(#{orderCreatedEnd},INTERVAL 1 DAY)
+		AND t3.id = #{shopId}
+	</select>
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.ferrari.FerrariRoleDao">
+
+	<insert id="insertFerrariRole" parameterType="com.home.ferrari.vo.ferrari.user.FerrariRole" useGeneratedKeys="true" keyProperty="id">
+		insert into t_ferrari_role(
+			role_name,
+			role_type,
+			create_time,
+			modify_time
+		) values (
+			#{roleName},
+			#{roleType},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<update id="updateFerrariRole" parameterType="com.home.ferrari.vo.ferrari.user.FerrariRole">
+		update t_ferrari_role set modify_time = now()
+		<if test="roleName!=null">
+			,role_name=#{roleName}
+		</if>
+		<if test="roleType!=null">
+			,role_type=#{roleType}
+		</if>
+		<![CDATA[
+			where id = #{id}
+		]]>	
+	</update>
+	
+	<select id="getFerrariRoleByName" resultType="com.home.ferrari.vo.ferrari.user.FerrariRole">
+		select id id,
+			   role_name roleName,
+			   role_type roleType
+	    from t_ferrari_role
+	    where role_name = #{roleName}
+	</select>
+
+	<select id="getFerrariRoleById" resultType="com.home.ferrari.vo.ferrari.user.FerrariRole">
+		select id id,
+			   role_name roleName,
+			   role_type roleType
+	    from t_ferrari_role
+	    where id = #{roleId}
+	</select>
+
+	<select id="getFerrariRoleList" resultType="com.home.ferrari.vo.ferrari.user.FerrariRole">
+		select id id,
+			   role_name roleName,
+			   role_type roleType
+	    from t_ferrari_role
+	</select>
+
+	<delete id="deleteRoleById">
+		delete from t_ferrari_role where id = #{id}
+	</delete>
+</mapper>

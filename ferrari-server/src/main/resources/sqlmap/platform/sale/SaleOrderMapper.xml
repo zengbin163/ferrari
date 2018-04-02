@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.sale.SaleOrderDao">
+	<insert id="insertSaleOrder" parameterType="com.home.ferrari.vo.sale.SaleOrder" useGeneratedKeys="true" keyProperty="id">
+		INSERT IGNORE INTO t_sale_order (
+		    shop_id,
+			biz_order_id,
+			seller_nick,
+			buyer_nick,
+			taobao_order_status,
+			shop_order_status,
+			payment,
+			post_fee,
+			receiver_name,
+			receiver_state,
+			receiver_address,
+			receiver_zip,
+			receiver_mobile,
+			receiver_phone,
+			order_source,
+			order_created,
+			order_pay,
+			order_consign,
+			order_end,
+			order_type,
+			buyer_message,
+			buyer_alipay_no,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{shopId},
+			#{bizOrderId},
+			#{sellerNick},
+			#{buyerNick},
+			#{taobaoOrderStatus},
+			#{shopOrderStatus},
+			#{payment},
+			#{postFee},
+			#{receiverName},
+			#{receiverState},
+			#{receiverAddress},
+			#{receiverZip},
+			#{receiverMobile},
+			#{receiverPhone},
+			#{orderSource},
+			#{orderCreated},
+			#{orderPay},
+			#{orderConsign},
+			#{orderEnd},
+			#{orderType},
+			#{buyerMessage},
+			#{buyerAlipayNo},
+			1,
+			NOW(),
+			NOW()
+		)  ON DUPLICATE KEY UPDATE modify_time = NOW(),
+			taobao_order_status=#{taobaoOrderStatus}
+	</insert>
+	<update id="updateSaleOrder" parameterType="com.home.ferrari.vo.sale.SaleOrder">
+		update t_sale_order set modify_time = NOW()
+			<if test="shopId!=null">
+				,shop_id = #{shopId}
+			</if>
+			<if test="taobaoOrderStatus!=null">
+				,taobao_order_status = #{taobaoOrderStatus}
+			</if>
+			<if test="shopOrderStatus!=null">
+				,shop_order_status = #{shopOrderStatus}
+			</if>
+			<if test="orderCreated!=null">
+				,order_created = #{orderCreated}
+			</if>
+			<if test="orderPay!=null">
+				,order_pay = #{orderPay}
+			</if>
+			<if test="orderConsign!=null">
+				,order_consign = #{orderConsign}
+			</if>
+			<if test="orderEnd!=null">
+				,order_end = #{orderEnd}
+			</if>
+			<if test="buyerMessage!=null">
+				,buyer_message = #{buyerMessage}
+			</if>
+			<if test="version!=null">
+				,version = #{version}
+			</if>
+		<![CDATA[
+			where id = #{id} and version < #{version} 
+		]]>	
+	</update>
+	<select id="getSaleOrderByBizOrderId" resultType="com.home.ferrari.vo.sale.SaleOrder">
+		select id id,
+		       biz_order_id bizOrderId,
+		       version version,
+		       taobao_order_status taobaoOrderStatus,
+		       shop_order_status shopOrderStatus,
+		       shop_id shopId,
+			   date_format(order_created,'%Y-%m-%d %H:%i:%s') orderCreateds,
+			   date_format(order_pay,'%Y-%m-%d %H:%i:%s') orderPays,
+			   date_format(order_consign,'%Y-%m-%d %H:%i:%s') orderConsigns,
+			   date_format(order_end,'%Y-%m-%d %H:%i:%s') orderEnds,
+		       receiver_name receiverName,
+			   receiver_address receiverAddress,
+			   receiver_zip receiverZip,
+			   buyer_message buyerMessage,
+			   seller_nick sellerNick,
+			   buyer_nick buyerNick,
+			   post_fee postFee,
+			   payment payment
+		from t_sale_order
+		where biz_order_id=#{bizOrderId}
+	</select>
+	<select id="getSaleOrderList" resultType="com.home.ferrari.vo.sale.SearchSaleOrder">
+		SELECT
+		    t1.id orderId,
+		    t2.id detailId,
+			t1.biz_order_id bizOrderId,
+			t2.product_name productName,
+			t2.pic_path picPath,
+			t1.buyer_nick buyerNick,
+			t1.seller_nick sellerNick,
+			date_format(t1.order_created,'%Y-%m-%d %H:%i:%s') orderCreated,
+			t1.taobao_order_status taobaoOrderStatus,
+			t2.et_shop_name etShopName,
+			t1.shop_order_status shopOrderStatus,
+			t1.buyer_alipay_no buyerAlipayNo,
+			t2.price price,
+			t2.num num,
+			t2.discount_fee discountFee,
+			t2.total_fee totalFee,
+			t2.payment payment,
+			t1.post_fee postFee,
+			t1.receiver_state receiverState,
+			t1.receiver_address receiverAddress,
+			t1.receiver_zip receiverZip,
+			t2.logistics_company logisticsCompany,
+			t2.invoice_no invoiceNo,
+      		t3.id shopId,
+      		t3.shop_name shopName,
+      		t3.province province,
+      		t3.city city,
+      		t2.pic_path picPath
+		FROM t_sale_order t1
+		LEFT JOIN t_sale_orderdetail t2 ON t1.biz_order_id = t2.biz_order_id
+    	LEFT JOIN t_tesla_shop t3 on t1.shop_id = t3.id
+    	<where>
+    		t1.shop_order_status > 0
+    		<!--  and t3.shop_status!=404  -->
+			<if test="shopOrderStatus!=null">
+				and t1.shop_order_status=#{shopOrderStatus}
+			</if>
+			<if test="shopId!=null and shopId!=0">
+				and t1.shop_id=#{shopId}
+			</if>
+			<if test="shopName!=null">
+				and t3.shop_name like CONCAT('%',#{shopName},'%' )
+			</if>
+			<if test="province!=null">
+				and t3.province = #{province}
+			</if>
+			<if test="city!=null">
+				and t3.city = #{city}
+			</if>
+			<if test="buyerNick!=null">
+				and t1.buyer_nick like CONCAT('%',#{buyerNick},'%' )
+			</if>
+			<if test="bizOrderId!=null">
+				and t1.biz_order_id=#{bizOrderId}
+			</if>
+			<if test="productName!=null">
+				and t2.product_name like CONCAT('%',#{productName},'%' )
+			</if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and #{orderCreatedEnd}
+		    </if>    
+	        <if test="taobaoSellerNick!=null">
+				and t1.seller_nick=#{taobaoSellerNick}
+	        </if>
+		</where>
+	</select>
+	<select id="countSaleOrderList" resultType="int">
+		SELECT COUNT(*)
+		FROM t_sale_order t1
+		LEFT JOIN t_sale_orderdetail t2 ON t1.biz_order_id = t2.biz_order_id
+    	LEFT JOIN t_tesla_shop t3 on t1.shop_id = t3.id
+		<where>
+    		t1.shop_order_status > 0
+    		<!--  and t3.shop_status!=404  -->
+			<if test="shopOrderStatus!=null">
+				and t1.shop_order_status=#{shopOrderStatus}
+			</if>
+			<if test="shopId!=null and shopId!=0">
+				and t1.shop_id=#{shopId}
+			</if>
+			<if test="shopName!=null">
+				and t3.shop_name like CONCAT('%',#{shopName},'%' )
+			</if>
+			<if test="province!=null">
+				and t3.province = #{province}
+			</if>
+			<if test="city!=null">
+				and t3.city = #{city}
+			</if>
+			<if test="buyerNick!=null">
+				and t1.buyer_nick like CONCAT('%',#{buyerNick},'%' )
+			</if>
+			<if test="bizOrderId!=null">
+				and t1.biz_order_id=#{bizOrderId}
+			</if>
+			<if test="productName!=null">
+				and t2.product_name like CONCAT('%',#{productName},'%' )
+			</if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and #{orderCreatedEnd}
+		    </if>   
+	        <if test="taobaoSellerNick!=null">
+				and t1.seller_nick=#{taobaoSellerNick}
+	        </if>
+		</where>
+	</select>
+	
+	<select id="getExportSaleOrderList" resultType="com.home.ferrari.vo.sale.SearchSaleOrder">
+		SELECT
+		    t1.id orderId,
+		    t2.id detailId,
+			t1.biz_order_id bizOrderId,
+			t2.product_name productName,
+			t2.pic_path picPath,
+			t1.buyer_nick buyerNick,
+			t1.seller_nick sellerNick,
+			date_format(t1.order_created,'%Y-%m-%d %H:%i:%s') orderCreated,
+			t1.taobao_order_status taobaoOrderStatus,
+			t2.et_shop_name etShopName,
+			t1.shop_order_status shopOrderStatus,
+			t1.buyer_alipay_no buyerAlipayNo,
+			t2.price price,
+			t2.num num,
+			t2.discount_fee discountFee,
+			t2.total_fee totalFee,
+			t2.payment payment,
+			t1.post_fee postFee,
+			t1.receiver_state receiverState,
+			t1.receiver_address receiverAddress,
+			t1.receiver_zip receiverZip,
+			t2.logistics_company logisticsCompany,
+			t2.invoice_no invoiceNo,
+      		t3.id shopId,
+      		t3.shop_name shopName,
+      		t3.province province,
+      		t3.city city,
+      		t2.pic_path picPath
+		FROM t_sale_order t1
+		LEFT JOIN t_sale_orderdetail t2 ON t1.biz_order_id = t2.biz_order_id
+    	LEFT JOIN t_tesla_shop t3 on t2.shop_name = t3.shop_name
+    	<where>
+    		t1.shop_order_status > 0
+			<if test="shopId!=null and shopId!=0">
+				and t1.shop_id=#{shopId}
+			</if>
+			<if test="productName!=null">
+				and t2.product_name = #{productName}
+			</if>
+			<if test="province!=null">
+				and t3.province = #{province}
+			</if>
+	        <if test="orderCreatedBegin!=null and orderCreatedEnd!=null">
+		        and t1.order_created BETWEEN #{orderCreatedBegin} and #{orderCreatedEnd}
+		    </if>    
+		</where>
+	</select>
+	
+	<select id="getUnAcceptSaleOrderList" resultType="com.home.ferrari.vo.sale.SaleOrder">
+		SELECT id id,
+		       biz_order_id bizOrderId,
+		       version version,
+		       taobao_order_status taobaoOrderStatus,
+		       shop_order_status shopOrderStatus,
+		       shop_id shopId,
+			   date_format(order_created,'%Y-%m-%d %H:%i:%s') orderCreateds,
+			   date_format(order_pay,'%Y-%m-%d %H:%i:%s') orderPays,
+			   date_format(order_consign,'%Y-%m-%d %H:%i:%s') orderConsigns,
+			   date_format(order_end,'%Y-%m-%d %H:%i:%s') orderEnds,
+		       receiver_name receiverName,
+			   receiver_address receiverAddress,
+			   receiver_zip receiverZip,
+			   buyer_message buyerMessage,
+			   seller_nick sellerNick,
+			   buyer_nick buyerNick,
+			   post_fee postFee,
+			   payment payment
+		FROM t_sale_order
+		WHERE shop_order_status = 101
+		     AND (UNIX_TIMESTAMP() * 1000 - UNIX_TIMESTAMP(modify_time) * 1000 ) > #{acceptTimeout}
+	</select>
+</mapper>

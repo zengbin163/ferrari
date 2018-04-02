@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.quest.QuestInvestigateDao">
+
+	<insert id="insertQuestInvestigate" parameterType="com.home.ferrari.vo.quest.QuestInvestigate" useGeneratedKeys="true" keyProperty="id">
+		insert into t_quest_investigate(
+			quest_id,
+			operator_id,
+			begin_time,
+			end_time,
+			create_time,
+			msg_type,
+			title,
+			text
+		) values (
+			#{questId},
+			#{operatorId},
+			#{beginTime},
+			#{endTime},
+			NOW(),
+			#{msgType},
+			#{title},
+			#{text}
+		)
+	</insert>
+
+	<select id="getQuestInvestigateById" resultType="com.home.ferrari.vo.quest.QuestInvestigate">
+		select id id,
+			quest_id questId,
+			operator_id operatorId,
+			begin_time beginTime,
+			end_time endTime,
+			create_time createTime,
+			msg_type msgType,
+			title title,
+			text text
+		from t_quest_investigate
+		where id = #{id}
+	</select>
+
+	<delete id="deleteQuestInvestigateById">
+		delete from t_quest_investigate where id = #{id}
+	</delete>
+	
+	<select id="getQuestInvestigateDetailById" resultType="com.home.ferrari.vo.quest.QuestInvestigate">
+		SELECT
+			t1.id id,
+			t1.begin_time beginTime,
+			t1.end_time endTime,
+			t1.operator_id operatorId,
+			IFNULL(t2.price, 0) price,
+			t1.msg_type msgType,
+			t1.title title,
+			t1.text text,
+			t2.title templateTitle,
+			t2.rich_text templateText
+		FROM
+			t_quest_investigate t1 
+			LEFT JOIN t_quest_template t2 ON t1.quest_id = t2.id
+		WHERE t1.id = #{investigateId} 
+	</select>	
+	
+    <select id="getMessageList" resultType="com.home.ferrari.vo.quest.QuestInvestigateCount">
+    	SELECT
+			t1.investigate_id investigateId,
+			t2.title title,
+	    	t2.msg_type msgType,
+			t1.create_time createTime,
+			t2.end_time endTime,
+			t3.nick_name operatorName
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t2 ON t1.investigate_id = t2.id
+		JOIN t_ferrari_user t3 ON t2.operator_id = t3.id
+		<where>
+			<if test="msgType!=null">
+				t1.msg_type=#{msgType}
+			</if>
+			<if test="roleType!=7">
+				and t2.operator_id=#{operatorId}
+			</if>
+		</where> 
+		GROUP BY
+			t2.id
+    </select>
+    <select id="countMessageList" resultType="int">
+     select count(*) from (
+    	SELECT
+			t1.investigate_id investigateId,
+			t2.title title,
+	    	t2.msg_type msgType,
+			t1.create_time createTime,
+			t2.end_time endTime,
+			t3.nick_name operatorName
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t2 ON t1.investigate_id = t2.id
+		JOIN t_ferrari_user t3 ON t2.operator_id = t3.id
+		<where>
+			<if test="msgType!=null">
+				t1.msg_type=#{msgType}
+			</if>
+			<if test="roleType!=7">
+				and t2.operator_id=#{operatorId}
+			</if>
+		</where> 
+		GROUP BY
+			t2.id
+		) t
+    </select>
+</mapper>

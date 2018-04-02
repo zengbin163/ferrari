@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.capacity.CapacityModelDao">
+	<insert id="insertCapacityModel" parameterType="com.home.ferrari.vo.capacity.CapacityModel" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_capacity_model (
+			capacity_model_id,
+			json,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{capacityModelId},
+			#{json},
+			#{version},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<update id="updateCapacityModelByCapacityModelId" parameterType="com.home.ferrari.vo.capacity.CapacityModel">
+		UPDATE t_capacity_model SET
+			modify_time=NOW(),
+			json=#{json},
+			version=#{version}
+		WHERE capacity_model_id=#{capacityModelId}	
+	</update>
+	
+	<select id="getCapacityModelByCapacityModelId" resultType="com.home.ferrari.vo.capacity.CapacityModel">
+		select id id,
+			   capacity_model_id capacityModelId,
+			   json json,
+			   version version
+		from t_capacity_model 
+		where capacity_model_id=#{capacityModelId}	   
+	</select>
+
+	<select id="getCapacityModelList" resultType="com.home.ferrari.vo.capacity.CapacityModel">
+		select id id,
+			   capacity_model_id capacityModelId,
+			   json json,
+			   version version
+		from t_capacity_model 
+	</select>
+
+</mapper>

@@ -1,0 +1,4 @@
+<title>统一错误页面</title>
+<body>
+	${errorMsg}
+</body>

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.b2b.B2bProductDao">
+
+	<insert id="insertB2bProduct" parameterType="com.home.ferrari.vo.b2b.B2bProduct" useGeneratedKeys="true" keyProperty="productId">
+		insert into t_b2b_product(
+			product_name,
+			key_words,
+			price,
+			category_id,
+			brand_name,
+			mobile,
+			product_model,
+			product_area,
+			product_color,
+			product_year,
+			pic1_addr,
+			pic2_addr,
+			pic3_addr,
+			pic4_addr,
+			pic5_addr,
+			view_count,
+			version,
+			can_show,
+			is_index,
+			guide_price,
+			color,
+			trim,
+			trans_specify,
+			train_teacher,
+			train_address,
+			brand_id,
+			model,
+			create_time,
+			modify_time
+		) values (
+			#{productName},
+			#{keyWords},
+			#{price},
+			#{categoryId},
+			#{brandName},
+			#{mobile},
+			#{productModel},
+			#{productArea},
+			#{productColor},
+			#{productYear},
+			#{pic1Addr},
+			#{pic2Addr},
+			#{pic3Addr},
+			#{pic4Addr},
+			#{pic5Addr},
+			0,
+			0,
+			#{canShow},
+			#{isIndex},
+			#{guidePrice},
+			#{color},
+			#{trim},
+			#{transSpecify},
+			#{trainTeacher},
+			#{trainAddress},
+			#{brandId},
+			#{model},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	<insert id="insertB2bProductText" parameterType="com.home.ferrari.vo.b2b.B2bProduct">
+		insert into t_b2b_product_text(
+			product_id,
+			text
+		) values (
+			#{productId},
+			#{text}
+		)
+	</insert>
+	<update id="updateB2bProduct" parameterType="com.home.ferrari.vo.b2b.B2bProduct">
+		update t_b2b_product set modify_time=NOW()
+		<if test="productName!=null">
+			,product_name=#{productName}
+		</if>
+		<if test="keyWords!=null">
+			,key_words=#{keyWords}
+		</if>
+		<if test="price!=null">
+			,price=#{price}
+		</if>
+		<if test="categoryId!=null">
+			,category_id=#{categoryId}
+		</if>
+		<if test="brandName!=null">
+			,brand_name=#{brandName}
+		</if>
+		<if test="mobile!=null">
+			,mobile=#{mobile}
+		</if>
+		<if test="productModel!=null">
+			,product_model=#{productModel}
+		</if>
+		<if test="productArea!=null">
+			,product_area=#{productArea}
+		</if>
+		<if test="productColor!=null">
+			,product_color=#{productColor}
+		</if>
+		<if test="productYear!=null">
+			,product_year=#{productYear}
+		</if>
+		<if test="pic1Addr!=null">
+			,pic1_addr=#{pic1Addr}
+		</if>
+		<if test="pic2Addr!=null">
+			,pic2_addr=#{pic2Addr}
+		</if>
+		<if test="pic3Addr!=null">
+			,pic3_addr=#{pic3Addr}
+		</if>
+		<if test="pic4Addr!=null">
+			,pic4_addr=#{pic4Addr}
+		</if>
+		<if test="pic5Addr!=null">
+			,pic5_addr=#{pic5Addr}
+		</if>
+		<if test="canShow!=null">
+			,can_show=#{canShow}
+		</if>
+		<if test="isIndex!=null">
+			,is_index=#{isIndex}
+		</if>
+		<if test="viewCount!=null">
+			,view_count=#{viewCount}
+		</if>
+		<if test="version!=null">
+			,version=#{version}
+		</if>
+		<if test="guidePrice!=null">
+			,guide_price=#{guidePrice}
+		</if>
+		<if test="color!=null">
+			,color=#{color}
+		</if>
+		<if test="trim!=null">
+			,trim=#{trim}
+		</if>
+		<if test="transSpecify!=null">
+			,trans_specify=#{transSpecify}
+		</if>
+		<if test="trainTeacher!=null">
+			,train_teacher=#{trainTeacher}
+		</if>
+		<if test="trainAddress!=null">
+			,train_address=#{trainAddress}
+		</if>
+		<if test="brandId!=null">
+			,brand_id=#{brandId}
+		</if>
+		<if test="model!=null">
+			,model=#{model}
+		</if>
+		<![CDATA[
+			where id = #{productId} and version<#{version}
+		]]>	
+	</update>
+	<update id="updateB2bProductText" parameterType="com.home.ferrari.vo.b2b.B2bProduct">
+		update t_b2b_product_text 
+		set text=#{text}
+		<![CDATA[
+			where product_id = #{productId}
+		]]>	
+	</update>
+	<select id="getAllB2BBrand" resultType="com.home.ferrari.vo.b2b.B2bBrand">
+		select id brandId,
+		       brand_name brandName
+		from t_b2b_brand       
+	</select>
+	<select id="getAllB2BCategory" resultType="com.home.ferrari.vo.b2b.B2bCategory">
+		select id categoryId,
+		       category_name categoryName,
+		       short_name shortName,
+		       category_logo categoryLogo,
+		       orders orders
+		from t_b2b_category       
+		order by orders ASC
+	</select>
+	<select id="getAllB2BProduct" resultType="com.home.ferrari.vo.b2b.B2bProduct">
+		SELECT
+			t1.id productId,
+			t1.product_name productName,
+			t1.key_words keyWords,
+			t1.price price,
+			t1.category_id categoryId,
+			t1.brand_name brandName,
+			t1.mobile mobile,
+			t1.product_model productModel,
+			t1.product_area productArea,
+			t1.product_color productColor,
+			t1.product_year productYear,
+			t1.pic1_addr pic1Addr,
+			t1.pic2_addr pic2Addr,
+			t1.pic3_addr pic3Addr,
+			t1.pic4_addr pic4Addr,
+			t1.pic5_addr pic5Addr,
+			t1.is_index isIndex,
+			t1.view_count viewCount,
+			t1.can_show canShow,
+			t1.guide_price guidePrice,
+			t1.color color,
+			t1.trim trim,
+			t1.trans_specify transSpecify,
+			t1.train_teacher trainTeacher,
+			t1.train_address trainAddress,
+			t1.brand_id brandId,
+			t1.model model,
+			t1.create_time createTime,
+			t1.modify_time modifyTime,
+			t2.category_name categoryName
+		FROM
+			t_b2b_product t1
+		LEFT JOIN t_b2b_category t2 ON t1.category_id = t2.id
+		<where>
+			<if test="productName!=null"> 
+				t1.product_name like CONCAT('%',#{productName},'%')
+			</if>
+			<if test="canShow!=null"> 
+				and t1.can_show = #{canShow}
+			</if>
+			<if test="categoryId!=null"> 
+				and t1.category_id = #{categoryId}
+			</if>
+			<if test="isIndex!=null"> 
+				and t1.is_index = #{isIndex}
+			</if>
+		</where>
+	</select>
+	<select id="getAllB2BProductCount" resultType="int">
+		select count(*)
+		from t_b2b_product t1
+		<where>
+			<if test="productName!=null"> 
+				t1.product_name like CONCAT('%',#{productName},'%')
+			</if>
+			<if test="canShow!=null"> 
+				and t1.can_show = #{canShow}
+			</if>
+			<if test="categoryId!=null"> 
+				and t1.category_id = #{categoryId}
+			</if>
+			<if test="isIndex!=null"> 
+				and t1.is_index = #{isIndex}
+			</if>
+		</where>
+	</select>
+	<select id="getB2BProductDetailById" resultType="com.home.ferrari.vo.b2b.B2bProduct">
+		select
+		    t1.id productId,	
+			t1.product_name productName,
+			t1.key_words keyWords,
+			t1.price price,
+			t1.category_id categoryId,
+			t3.category_name categoryName,
+			t3.short_name categoryShortName,
+			t1.brand_name brandName,
+			t1.mobile mobile,
+			t1.product_model productModel,
+			t1.product_area productArea,
+			t1.product_color productColor,
+			t1.product_year productYear,
+			t1.pic1_addr pic1Addr,
+			t1.pic2_addr pic2Addr,
+			t1.pic3_addr pic3Addr,
+			t1.pic4_addr pic4Addr,
+			t1.pic5_addr pic5Addr,
+			t1.is_index isIndex,
+			t1.view_count viewCount,
+			t1.can_show canShow,
+			t1.create_time createTime,
+			t1.modify_time modifyTime,
+			t1.guide_price guidePrice,
+			t1.color color,
+			t1.trim trim,
+			t1.trans_specify transSpecify,
+			t1.train_teacher trainTeacher,
+			t1.train_address trainAddress,
+			t1.brand_id brandId,
+			t1.model model,
+			t2.text text
+		from t_b2b_product t1,t_b2b_product_text t2,t_b2b_category t3
+		where t1.id=t2.product_id  and t1.category_id = t3.id
+			and t1.id=#{productId}
+			<if test="canShow!=null">
+				and t1.can_show=#{canShow}
+			</if>
+	  </select>
+	<select id="getB2BProductById" resultType="com.home.ferrari.vo.b2b.B2bProduct">
+		select
+		    t1.id productId,	
+			t1.product_name productName,
+			t1.key_words keyWords,
+			t1.price price,
+			t1.category_id categoryId,
+			t1.brand_name brandName,
+			t1.mobile mobile,
+			t1.product_model productModel,
+			t1.product_area productArea,
+			t1.product_color productColor,
+			t1.product_year productYear,
+			t1.pic1_addr pic1Addr,
+			t1.pic2_addr pic2Addr,
+			t1.pic3_addr pic3Addr,
+			t1.pic4_addr pic4Addr,
+			t1.pic5_addr pic5Addr,
+			t1.is_index isIndex,
+			t1.view_count viewCount,
+			t1.can_show canShow,
+			t1.guide_price guidePrice,
+			t1.color color,
+			t1.trim trim,
+			t1.trans_specify transSpecify,
+			t1.train_teacher trainTeacher,
+			t1.train_address trainAddress,
+			t1.brand_id brandId,
+			t1.model model,
+			t1.create_time createTime,
+			t1.modify_time modifyTime,
+			t1.version version
+		from t_b2b_product t1
+		where t1.id=#{productId}
+	  </select>
+</mapper>

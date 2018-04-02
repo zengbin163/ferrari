@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.ferrari.FerrariRoleMenuDao">
+
+    <insert id="insertFerrariMenu" parameterType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu" useGeneratedKeys="true" keyProperty="menuId">
+    	insert into t_ferrari_menu(
+    		parent_id,
+    		menu_name,
+    		menu_en_name,
+    		menu_url,
+    		menu_extends,
+    		is_menu,
+    		create_time
+    	)
+    	VALUES(
+    		#{parentMenuId},
+    		#{menuName},
+    		#{menuEnName},
+    		#{menuUrl},
+    		#{menuExtends},
+    		#{isMenu},
+    		NOW()
+    	)
+    </insert>
+    
+    <update id="updateFerrariMenu" parameterType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu">
+    	update t_ferrari_menu 
+    	<set>
+    		<if test="parentMenuId!=null">
+    			parent_id = #{parentMenuId},
+    		</if>	
+    		<if test="menuName!=null">
+    			menu_name = #{menuName},
+    		</if>	
+    		<if test="menuEnName!=null">
+    			menu_en_name = #{menuEnName},
+    		</if>	
+    		<if test="menuUrl!=null">
+    			menu_url = #{menuUrl},
+    		</if>	
+    		<if test="menuExtends!=null">
+    			menu_extends = #{menuExtends},
+    		</if>	
+    		<if test="isMenu!=null">
+    			is_menu = #{isMenu},
+    		</if>	
+    	</set>
+    	where id = #{menuId}
+    </update>
+    
+	<select id="getFerrariMenuList" resultType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu">
+		call getMenuChildLst(0)
+	</select>
+
+	<select id="getFerrariUserMenuList" resultType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu">
+		SELECT
+	        distinct
+			t1.user_id userId,
+			t2.id roleId,
+			t2.role_type roleType,
+			t4.id menuId,
+			t4.is_menu isMenu,
+			t4.parent_id parentMenuId,
+			t4.menu_name menuName,
+			t4.menu_en_name menuEnName,
+			t4.menu_url menuUrl
+		FROM
+			t_ferrari_user_role t1
+		JOIN t_ferrari_role t2 ON t1.role_id = t2.id
+		JOIN t_ferrari_role_menu t3 ON t2.id = t3.role_id
+		JOIN t_ferrari_menu t4 ON t3.menu_id = t4.id
+		WHERE
+			t1.user_id = #{userId}
+	</select> 
+
+	<select id="hasMenuAuthority" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_ferrari_menu t1
+		INNER JOIN t_ferrari_role_menu t2 ON t1.id = t2.menu_id
+		INNER JOIN t_ferrari_user_role t3 ON t2.role_id = t3.role_id
+		INNER JOIN t_ferrari_user t4 ON t3.user_id = t4.id
+		WHERE
+			t1.menu_url = #{menuUrl}
+		AND t4.mobile = #{mobile}
+	</select> 
+	
+	<insert id="insertFerrariRoleMenu" parameterType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu" useGeneratedKeys="true" keyProperty="id">
+		insert into t_ferrari_role_menu(
+			role_id,
+			menu_id,
+			create_time,
+			modify_time
+		) values (
+			#{roleId},
+			#{menuId},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getFerrariMenuListByRoleId" resultType="com.home.ferrari.vo.ferrari.user.FerrariRoleMenu">
+		SELECT
+			t2.id menuId,
+		    t2.parent_id parentMenuId,
+		    t2.is_menu isMenu,
+	      	t2.menu_name menuName,
+		    t2.menu_en_name menuEnName,
+		    t2.menu_url menuUrl,
+		    t1.role_id roleId,
+		    t3.role_name roleName,
+		    t3.role_type roleType
+		FROM
+			t_ferrari_role_menu t1
+		JOIN t_ferrari_menu t2 ON t1.menu_id = t2.id
+		JOIN t_ferrari_role t3 ON t3.id = t1.role_id
+		WHERE
+			t1.role_id = #{roleId}
+	</select>
+	
+	<delete id="deleteFerrariRoleMenu">
+		delete from t_ferrari_role_menu where role_id = #{roleId}
+	</delete>
+</mapper>

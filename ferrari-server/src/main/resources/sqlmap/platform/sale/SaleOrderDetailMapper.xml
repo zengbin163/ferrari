@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.sale.SaleOrderDetailDao">
+	<insert id="insertSaleOrderDetail" parameterType="com.home.ferrari.vo.sale.SaleOrderDetail" useGeneratedKeys="true" keyProperty="id">
+		INSERT IGNORE INTO t_sale_orderdetail (
+			biz_order_id,
+			biz_detail_id,
+			taobao_detail_status,
+			product_name,
+			et_shop_name,
+			shop_name,
+			num,
+			payment,
+			price,
+			total_fee,
+			discount_fee,
+			pic_path,
+			logistics_company,
+			invoice_no,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{bizOrderId},
+			#{bizDetailId},
+			#{taobaoDetailStatus},
+			#{productName},
+			#{etShopName},
+			#{shopName},
+			#{num},
+			#{payment},
+			#{price},
+			#{totalFee},
+			#{discountFee},
+			#{picPath},
+			#{logisticsCompany},
+			#{invoiceNo},
+			1,
+			NOW(),
+			NOW()
+		) ON DUPLICATE KEY UPDATE modify_time = NOW(),
+			taobao_detail_status=#{taobaoDetailStatus}
+	</insert>
+	<update id="updateSaleOrderDetail" parameterType="com.home.ferrari.vo.sale.SaleOrderDetail">
+		update t_sale_orderdetail set modify_time = NOW()
+			<if test="taobaoDetailStatus!=null">
+				,taobao_detail_status = #{taobaoDetailStatus}
+			</if>
+			<if test="logisticsCompany!=null">
+				,logistics_company = #{logisticsCompany}
+			</if>
+			<if test="invoiceNo!=null">
+				,invoice_no = #{invoiceNo}
+			</if>
+			<if test="version!=null">
+				,version = #{version}
+			</if>
+		<![CDATA[
+			where id = #{id} and version < #{version} 
+		]]>	
+	</update>
+	<select id="getSaleOrderDetailListByBizOrderId" resultType="com.home.ferrari.vo.sale.SaleOrderDetail">
+		select id id,
+			   version version,
+		       biz_order_id bizOrderId,
+		       biz_detail_id bizDetailId,
+			   pic_path picPath,
+			   product_name productName,
+			   price price,
+			   num num,
+			   discount_fee discountFee,
+			   taobao_detail_status taobaoDetailStatus,
+			   et_shop_name etShopName,
+			   shop_name shopName,
+			   total_fee totalFee
+		from t_sale_orderdetail
+		where biz_order_id=#{bizOrderId}
+	</select>
+	<select id="getSaleOrderDetailByBizDetailId" resultType="com.home.ferrari.vo.sale.SaleOrderDetail">
+		select id id,
+			   version version,
+		       biz_order_id bizOrderId,
+		       biz_detail_id bizDetailId,
+			   pic_path picPath,
+			   product_name productName,
+			   price price,
+			   num num,
+			   discount_fee discountFee,
+			   taobao_detail_status taobaoDetailStatus,
+			   et_shop_name etShopName,
+			   shop_name shopName,
+			   total_fee totalFee
+		from t_sale_orderdetail
+		where biz_detail_id=#{bizDetailId}
+	</select>
+	<select id="getSaleOrderDetailListByProductName" resultType="com.home.ferrari.vo.sale.SaleOrderDetail">
+		select id id,
+			   version version,
+		       biz_order_id bizOrderId,
+		       biz_detail_id bizDetailId,
+			   pic_path picPath,
+			   product_name productName,
+			   price price,
+			   num num,
+			   discount_fee discountFee,
+			   taobao_detail_status taobaoDetailStatus,
+			   et_shop_name etShopName,
+			   shop_name shopName,
+			   total_fee totalFee
+		from t_sale_orderdetail
+		where product_name=#{productName}
+	</select>
+	
+</mapper>

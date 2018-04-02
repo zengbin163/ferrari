@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.quest.QuestTemplateDao">
+
+	<insert id="insertQuestTemplate" parameterType="com.home.ferrari.vo.quest.QuestTemplate" useGeneratedKeys="true" keyProperty="id">
+		insert into t_quest_template(
+			title,
+			rich_text,
+			price,
+			temp_type,
+			quest_type,
+			operator_id,
+			flag,
+			create_time,
+			modify_time
+		) values (
+			#{title},
+			#{richText},
+			#{price},
+			#{tempType},
+			#{questType},
+			#{operatorId},
+			1,
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<select id="getQuestTemplateListByType" resultType="com.home.ferrari.vo.quest.QuestTemplate">
+		select id id,
+			title title,
+			rich_text richText,
+			IFNULL(price,0) price,
+			temp_type tempType,
+			quest_type questType,
+			operator_id operatorId,
+			create_time createTime,
+			modify_time modifyTime
+	    from t_quest_template
+	    <where>
+	        flag=1
+			<if test="questType!=null">
+				and quest_type = #{questType}
+			</if>	    
+			<if test="tempType!=null">
+				and temp_type = #{tempType}
+			</if>	    
+	    </where>
+	</select>
+	<select id="countQuestTemplateListByType" resultType="int">
+		select count(*)
+	    from t_quest_template
+	    <where>
+	        flag=1
+			<if test="questType!=null">
+				and quest_type = #{questType}
+			</if>	
+			<if test="tempType!=null">
+				and temp_type = #{tempType}
+			</if>	    
+	    </where>
+	</select>
+	<select id="countQuestTemplateGroupByType" resultType="map">
+		select count(*) sum, 
+			   quest_type questType
+	    from t_quest_template 
+	    where flag=1
+	    group by quest_type
+	</select>
+
+	<select id="getQuestTemplateById" resultType="com.home.ferrari.vo.quest.QuestTemplate">
+		select id id,
+			title title,
+			rich_text richText,
+			IFNULL(price,0) price,
+			temp_type tempType,
+			quest_type questType,
+			operator_id operatorId,
+			flag flag,
+			create_time createTime,
+			modify_time modifyTime
+	    from t_quest_template
+	    where id = #{id}
+	</select>
+	
+	<delete id="deleteQuestTemplateById">
+		delete from t_quest_template where id=#{id}
+	</delete>
+	
+	<update id="updateQuestTemplateById" parameterType="com.home.ferrari.vo.quest.QuestTemplate">
+		update t_quest_template set modify_time=NOW()
+		<if test="title!=null">
+			,title=#{title}
+		</if>
+		<if test="richText!=null">
+			,rich_text=#{richText}
+		</if>
+		<if test="price!=null">
+			,price=#{price}
+		</if>
+		<if test="tempType!=null">
+			,temp_type=#{tempType}
+		</if>
+		<if test="questType!=null">
+			,quest_type=#{questType}
+		</if>
+		<if test="operatorId!=null">
+			,operator_id=#{operatorId}
+		</if>
+		<if test="flag!=null">
+			,flag=#{flag}
+		</if>
+		where id=#{id}		
+	</update>
+	
+	<select id="getQuestShopList" resultType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		SELECT
+  		    distinct
+			t1.id id,
+			t1.shop_name shopName,
+			t1.manager manager,
+			t1.link_phone linkPhone,
+			t1.shop_address shopAddress
+		FROM
+			t_tesla_shop t1
+		LEFT JOIN t_shop_capacity t2 ON t1.id = t2.shop_id
+		LEFT JOIN t_tesla_shop_brand t3 ON t1.id = t3.shop_id
+		<if test="capacityName!=null">
+			LEFT JOIN t_shop_capacity_inputval t4 ON t1.id = t4.shop_id and t2.capacity_id=t4.leaf_capacity_id
+		</if>
+		<where>
+			<if test="capacityName!=null">
+		        t2.is_leaf = 1
+				AND t2.name=#{capacityName} 
+				AND t4.header_name='有无此服务' 
+				AND t4.input_value=1
+			</if>
+			<if test="brandName!=null">
+				AND t3.car_brand = #{brandName}
+			</if>
+			<if test="province!=null">
+				AND t1.province = #{province}
+			</if>
+			<if test="city!=null">
+				AND t1.city = #{city}
+			</if>
+			<if test="shopType!=null">
+				AND t1.shop_type = #{shopType}
+			</if>
+			<if test="shopName!=null">
+				AND t1.shop_name like CONCAT('%',#{shopName},'%')
+			</if>
+		</where>
+	</select>
+	<select id="countQuestShopList" resultType="int">
+		SELECT count(distinct t1.id)
+		FROM
+			t_tesla_shop t1
+		LEFT JOIN t_shop_capacity t2 ON t1.id = t2.shop_id
+		LEFT JOIN t_tesla_shop_brand t3 ON t1.id = t3.shop_id
+		<if test="capacityName!=null">
+			LEFT JOIN t_shop_capacity_inputval t4 ON t1.id = t4.shop_id and t2.capacity_id=t4.leaf_capacity_id
+		</if>
+		<where>
+			<if test="capacityName!=null">
+		        t2.is_leaf = 1
+				AND t2.name=#{capacityName} 
+				AND t4.header_name='有无此服务' 
+				AND t4.input_value=1
+			</if>
+			<if test="brandName!=null">
+				AND t3.car_brand = #{brandName}
+			</if>
+			<if test="province!=null">
+				AND t1.province = #{province}
+			</if>
+			<if test="city!=null">
+				AND t1.city = #{city}
+			</if>
+			<if test="shopType!=null">
+				AND t1.shop_type = #{shopType}
+			</if>
+			<if test="shopName!=null">
+				AND t1.shop_name like CONCAT('%',#{shopName},'%')
+			</if>
+		</where>
+	</select>
+</mapper>

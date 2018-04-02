@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.common.ResourceDao">
+
+	<insert id="insertOrUpdateResource" parameterType="com.home.ferrari.vo.common.Resource">
+		INSERT IGNORE INTO t_resource(
+			resource_key,
+			resource_desc,
+			resource_value,
+			resource_id,
+			create_time,
+			modify_time
+		) VALUES (
+			#{resourceKey},
+			#{resourceDesc},
+			#{resourceValue},
+			#{resourceId},
+			NOW(),
+			NOW()
+	    ) ON DUPLICATE KEY UPDATE 
+			<if test="resourceKey != null">
+				resource_key = #{resourceKey},
+			</if>
+			<if test="resourceDesc != null">
+				resource_desc = #{resourceDesc},
+			</if>
+			<if test="resourceValue != null">
+				resource_value = #{resourceValue},
+			</if>
+			<if test="resourceId != null">
+				resource_id = #{resourceId},
+			</if>
+			modify_time = NOW()
+	</insert>
+	
+	<select id="getResourcesByKey" resultType="com.home.ferrari.vo.common.Resource">
+		select id id,
+			resource_key resourceKey,
+			resource_desc resourceDesc,
+			resource_value resourceValue,
+			resource_id resourceId,
+			create_time createTime,
+			modify_time modifyTime
+		  from t_resource
+		where resource_key = #{resourceKey}
+		order by resource_value asc
+	</select>
+
+	<select id="getResourcesByKeyAndId" resultType="com.home.ferrari.vo.common.Resource">
+		select id id,
+			resource_key resourceKey,
+			resource_desc resourceDesc,
+			resource_value resourceValue,
+			resource_id resourceId,
+			create_time createTime,
+			modify_time modifyTime
+		  from t_resource
+		where resource_key = #{resourceKey}
+			and (resource_id is null OR resource_id=0 OR resource_id=#{resourceId})
+		order by resource_value ASC
+	</select>
+	
+	<select id="getResourcesByKeyVal" resultType="com.home.ferrari.vo.common.Resource">
+		select id id,
+			resource_key resourceKey,
+			resource_desc resourceDesc,
+			resource_value resourceValue,
+			resource_id resourceId,
+			create_time createTime,
+			modify_time modifyTime
+		  from t_resource
+		where resource_key = #{resourceKey} and resource_value = #{resourceValue}
+	</select>
+
+	<select id="deleteResourcesByKeyVal" resultType="com.home.ferrari.vo.common.Resource">
+		delete from t_resource
+		where resource_key = #{resourceKey} and resource_value = #{resourceValue}
+	</select>
+
+	<select id="getResourceMaxVal" resultType="int">
+		select max(resource_value) resourceValue
+		  from t_resource
+		where resource_key = #{resourceKey}
+	</select>
+</mapper>

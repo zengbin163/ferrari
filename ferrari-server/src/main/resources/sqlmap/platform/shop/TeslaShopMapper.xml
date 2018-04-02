@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.shop.TeslaShopDao">
+
+	<sql id="selectTeslaShopId">
+		select id id,
+			shop_type shopType,
+			abc_type abcType,
+			shop_status shopStatus,
+			shop_expand_status shopExpandStatus,
+			monitor_status monitorStatus,
+			province province,
+			city city,
+			county county,
+			shop_name shopName,
+			shop_address shopAddress,
+			company_name companyName,
+			open_time openTime,
+			bd_owner bdOwner,
+			bd_phone bdPhone,
+			is_chezhuka isChezhuka,
+			manager manager,
+			link_phone linkPhone,
+			phone phone,
+			complaint_phone complaintPhone,
+			day_linker dayLinker,
+			light_box lightBox,
+			back_wall backWall,
+			field_area fieldArea,
+			workshop_area workshopArea,
+			persons persons,
+			sub_branchs subBranchs,
+			aftersales_manager aftersalesManager,
+			aftersales_phone aftersalesPhone,
+			linker_l45_photo linkerL45Photo,
+			linker_r45_photo linkerR45Photo,
+			full_view_photo fullViewPhoto,
+			feature_photo featurePhoto,
+			create_time createTime,
+			modify_time modifyTime
+	</sql>
+
+	<select id="getAllShops" resultType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		<include refid="selectTeslaShopId" />
+		from t_tesla_shop
+	</select>
+
+	<select id="getTeslaShopList" resultType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		<include refid="selectTeslaShopId" />
+		from t_tesla_shop
+		<where>
+			<if test="shopName!=null">
+			     shop_name like CONCAT('%',#{shopName},'%' )
+			</if>     
+			<if test="province!=null">
+			     and province=#{province}
+			</if>
+			<if test="city!=null">
+			     and city=#{city}
+			</if>
+			<if test="shopStatusList!=null">
+			     and shop_status in
+				 <foreach item="item" index="index" collection="shopStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="shopExpandStatusList!=null">
+				 and shop_expand_status in
+				 <foreach item="item" index="index" collection="shopExpandStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="monitorStatusList!=null">
+				 and monitor_status in
+				 <foreach item="item" index="index" collection="monitorStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+			<if test="shopType!=null">
+				and shop_type=#{shopType}
+			</if>
+			<if test="abcType!=null">
+				and abc_type=#{abcType}
+			</if>
+		</where>
+	</select>
+	<select id="countTeslaShopList" resultType="int">
+		select count(*)
+		from t_tesla_shop
+		<where>
+			<if test="shopName!=null">
+			     shop_name like CONCAT('%',#{shopName},'%' )
+			</if>     
+			<if test="province!=null">
+			     and province=#{province}
+			</if>
+			<if test="city!=null">
+			     and city=#{city}
+			</if>
+			<if test="shopStatusList!=null">
+			     and shop_status in
+				 <foreach item="item" index="index" collection="shopStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="shopExpandStatusList!=null">
+				 and shop_expand_status in
+				 <foreach item="item" index="index" collection="shopExpandStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="monitorStatusList!=null">
+				 and monitor_status in
+				 <foreach item="item" index="index" collection="monitorStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="shopType!=null">
+				and shop_type=#{shopType}
+			</if>
+			<if test="abcType!=null">
+				and abc_type=#{abcType}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getTeslaShopById" resultType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		<include refid="selectTeslaShopId" />
+		from t_tesla_shop
+		where id = #{id}
+	</select>
+
+	<select id="getTeslaShopByName" resultType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		<include refid="selectTeslaShopId" />
+		from t_tesla_shop
+		where shop_name = #{shopName}
+	</select>
+
+	<insert id="insertTeslaShop" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShop" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_tesla_shop(
+			shop_type,
+			abc_type,
+			shop_status,
+			shop_expand_status,
+			monitor_status,
+			province,
+			city,
+			county,
+			shop_name,
+			shop_address,
+			company_name,
+			open_time,
+			bd_owner,
+			bd_phone,
+			is_chezhuka,
+			manager,
+			link_phone,
+			phone,
+			complaint_phone,
+			day_linker,
+			light_box,
+			back_wall,
+			field_area,
+			workshop_area,
+			persons,
+			sub_branchs,
+			operator_id,
+			aftersales_manager,
+			aftersales_phone,
+			linker_l45_photo,
+			linker_r45_photo,
+			full_view_photo,
+			feature_photo,
+			create_time,
+			modify_time
+		)VALUES(
+			#{shopType},
+			#{abcType},
+			#{shopStatus},
+			#{shopExpandStatus},
+			#{monitorStatus},
+			#{province},
+			#{city},
+			#{county},
+			#{shopName},
+			#{shopAddress},
+			#{companyName},
+			#{openTime},
+			#{bdOwner},
+			#{bdPhone},
+			#{isChezhuka},
+			#{manager},
+			#{linkPhone},
+			#{phone},
+			#{complaintPhone},
+			#{dayLinker},
+			#{lightBox},
+			#{backWall},
+			#{fieldArea},
+			#{workshopArea},
+			#{persons},
+			#{subBranchs},
+			#{operatorId},
+			#{aftersalesManager},
+			#{aftersalesPhone},
+			#{linkerL45Photo},
+			#{linkerR45Photo},
+			#{fullViewPhoto},
+			#{featurePhoto},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertTeslaShopBrand" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopBrand" useGeneratedKeys="true" keyProperty="id">
+		insert into t_tesla_shop_brand(
+			shop_id,
+			car_brand,
+			create_time,
+			modify_time
+		)values(
+			#{shopId},
+			#{carBrand},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertTeslaShopHardware" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopHardware" useGeneratedKeys="true" keyProperty="id">
+		insert into t_tesla_shop_hardware(
+			shop_id,
+			car_left,
+			four_wheel,
+			engine,
+			press,
+			jack,
+			curing_barn,
+			polisher,
+			grinding,
+			car_wash,
+			hairdressing,
+			special_computer,
+			common_computer,
+			balancer,
+			cleaner,
+			hot_lamps,
+			sander,
+			inspection,
+			car_cleaner,
+			water_torch,
+			trans_jack,
+			tester,
+			vacuum_cleaner,
+			repair,
+			car_washer,
+			coating_machine,
+			nozzle,			
+			create_time,
+			modify_time
+		)values(
+			#{shopId},
+			#{carLeft},
+			#{fourWheel},
+			#{engine},
+			#{press},
+			#{jack},
+			#{curingBarn},
+			#{polisher},
+			#{grinding},
+			#{carWash},
+			#{hairdressing},
+			#{specialComputer},
+			#{commonComputer},
+			#{balancer},
+			#{cleaner},
+			#{hotLamps},
+			#{sander},
+			#{inspection},
+			#{carCleaner},
+			#{waterTorch},
+			#{transJack},
+			#{tester},
+			#{vacuumCleaner},
+			#{repair},
+			#{carWasher},
+			#{coatingMachine},
+			#{nozzle},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertTeslaShopSales" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopSales" useGeneratedKeys="true" keyProperty="id">
+		insert into t_tesla_shop_sales(
+			shop_id,
+			sale_area,
+			space,
+			district,
+			cust_rest,
+			cust_exper,
+			district_photo,
+			cust_rest_photo,
+			cust_exper_photo,
+			sale_manager,
+			manager_phone,
+			sale_counselor,
+			counselor_number,
+			create_time,
+			modify_time
+		)values(
+			#{shopId},
+			#{saleArea},
+			#{space},
+			#{district},
+			#{custRest},
+			#{custExper},
+			#{districtPhoto},
+			#{custRestPhoto},
+			#{custExperPhoto},
+			#{saleManager},
+			#{managerPhone},
+			#{saleCounselor},
+			#{counselorNumber},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertTeslaShopTalent" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopTalent" useGeneratedKeys="true" keyProperty="id">
+		insert into t_tesla_shop_talent(
+			shop_id,
+			aftersale_manager,
+			aftersale_phone,
+			service_majordomo,
+			service_phone,
+			tech_majordomo,
+			tech_phone,
+			marketing_majordomo,
+			marketing_phone,
+			parts_majordomo,
+			parts_phone,
+			sale_majordomo,
+			sale_phone,
+			service_consultant,
+			service_phones,
+			create_time,
+			modify_time
+		)values(
+			#{shopId},
+			#{aftersaleManager},
+			#{aftersalePhone},
+			#{serviceMajordomo},
+			#{servicePhone},
+			#{techMajordomo},
+			#{techPhone},
+			#{marketingMajordomo},
+			#{marketingPhone},
+			#{partsMajordomo},
+			#{partsPhone},
+			#{saleMajordomo},
+			#{salePhone},
+			#{serviceConsultant},
+			#{servicePhones},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertTeslaShopWorkshop" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopWorkshop" useGeneratedKeys="true" keyProperty="id">
+		insert into t_tesla_shop_workshop(
+			shop_id,
+			setup_station,
+			setup_number,
+			quick_station,
+			quick_number,
+			upkeep_station,
+			upkeep_number,
+			machine_station,
+			machine_number,
+			accident_station,
+			accident_number,
+			decorate_station,
+			decorate_number,
+			beauty_station,
+			beauty_number,
+			washcar_station,
+			washcar_number,
+			metal_station,
+			metal_number,
+			paint_station,
+			paint_number,
+			create_time,
+			modify_time
+		)values(
+			#{shopId},
+			#{setupStation},
+			#{setupNumber},
+			#{quickStation},
+			#{quickNumber},
+			#{upkeepStation},
+			#{upkeepNumber},
+			#{machineStation},
+			#{machineNumber},
+			#{accidentStation},
+			#{accidentNumber},
+			#{decorateStation},
+			#{decorateNumber},
+			#{beautyStation},
+			#{beautyNumber},
+			#{washcarStation},
+			#{washcarNumber},
+			#{metalStation},
+			#{metalNumber},
+			#{paintStation},
+			#{paintNumber},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<select id="getTeslaShopBrandByShopId" resultType="com.home.ferrari.vo.tesla.shop.TeslaShopBrand">
+		SELECT shop_id shopId,
+			car_brand carBrand
+		FROM t_tesla_shop_brand
+		WHERE shop_id = #{shopId}
+	</select>
+	
+	<select id="getTeslaShopInfoById" resultType="com.home.ferrari.vo.tesla.shop.TeslaShopInfo">
+		SELECT
+			t1.id "shopBase.id",
+			t1.shop_type "shopBase.shopType",
+			t1.abc_type "shopBase.abcType",
+			t1.shop_status "shopBase.shopStatus",
+			t1.shop_expand_status "shopBase.shopExpandStatus",
+			t1.monitor_status "shopBase.monitorStatus",
+			t1.province "shopBase.province",
+			t1.city "shopBase.city",
+			t1.county "shopBase.county",
+			t1.shop_name "shopBase.shopName",
+			t1.shop_address "shopBase.shopAddress",
+			t1.company_name "shopBase.companyName",
+			t1.open_time "shopBase.openTime",
+			t1.bd_owner "shopBase.bdOwner",
+			t1.is_chezhuka "shopBase.isChezhuka",
+			t1.manager "shopBase.manager",
+			t1.link_phone "shopBase.linkPhone",
+			t1.phone "shopBase.phone",
+			t1.complaint_phone "shopBase.complaintPhone",
+			t1.day_linker "shopBase.dayLinker",
+			t1.light_box "shopBase.lightBox",
+			t1.back_wall "shopBase.backWall",
+			t1.field_area "shopBase.fieldArea",
+			t1.workshop_area "shopBase.workshopArea",
+			t1.persons "shopBase.persons",
+			t1.sub_branchs "shopBase.subBranchs",
+			t1.create_time "shopBase.createTime",
+			t1.modify_time "shopBase.modifyTime",
+			t1.bd_phone "shopBase.bdPhone",
+			t1.aftersales_manager "shopBase.aftersalesManager",
+			t1.aftersales_phone "shopBase.aftersalesPhone",
+			t1.linker_l45_photo "shopBase.linkerL45Photo",
+			t1.linker_r45_photo "shopBase.linkerR45Photo",
+			t1.full_view_photo "shopBase.fullViewPhoto",
+			t1.feature_photo "shopBase.featurePhoto",
+			t3.shop_id "shopHardware.shopId",
+			t3.car_left "shopHardware.carLeft",
+			t3.four_wheel "shopHardware.fourWheel",
+			t3.engine "shopHardware.engine",
+			t3.press "shopHardware.press",
+			t3.jack "shopHardware.jack",
+			t3.curing_barn "shopHardware.curingBarn",
+			t3.polisher "shopHardware.polisher",
+			t3.grinding "shopHardware.grinding",
+			t3.car_wash "shopHardware.carWash",
+			t3.hairdressing "shopHardware.hairdressing",
+			t3.special_computer "shopHardware.specialComputer",
+			t3.common_computer "shopHardware.commonComputer",
+			t3.balancer "shopHardware.balancer",
+			t3.cleaner "shopHardware.cleaner",
+			t3.hot_lamps "shopHardware.hotLamps",
+			t3.sander "shopHardware.sander",
+			t3.inspection "shopHardware.inspection",
+			t3.car_cleaner "shopHardware.carCleaner",
+			t3.water_torch "shopHardware.waterTorch",
+			t3.trans_jack "shopHardware.transJack",
+			t3.tester "shopHardware.tester",
+			t3.vacuum_cleaner "shopHardware.vacuumCleaner",
+			t3.repair "shopHardware.repair",
+			t3.car_washer "shopHardware.carWasher",
+			t3.coating_machine "shopHardware.coatingMachine",
+			t3.nozzle "shopHardware.nozzle",
+			t4.shop_id "shopSales.shopId",
+			t4.sale_area "shopSales.saleArea",
+			t4.space "shopSales.space",
+			t4.district "shopSales.district",
+			t4.cust_rest "shopSales.custRest",
+			t4.cust_exper "shopSales.custExper",
+			t4.district_photo "shopSales.districtPhoto",
+			t4.cust_rest_photo "shopSales.custRestPhoto",
+			t4.cust_exper_photo "shopSales.custExperPhoto",
+			t4.sale_manager "shopSales.saleManager",
+			t4.manager_phone "shopSales.managerPhone",
+			t4.sale_counselor "shopSales.saleCounselor",
+			t4.counselor_number "shopSales.counselorNumber",
+			t5.shop_id "shopTalent.shopId",
+			t5.aftersale_manager "shopTalent.aftersaleManager",
+			t5.aftersale_phone "shopTalent.aftersalePhone",
+			t5.service_majordomo "shopTalent.serviceMajordomo",
+			t5.service_phone "shopTalent.servicePhone",
+			t5.tech_majordomo "shopTalent.techMajordomo",
+			t5.tech_phone "shopTalent.techPhone",
+			t5.marketing_majordomo "shopTalent.marketingMajordomo",
+			t5.marketing_phone "shopTalent.marketingPhone",
+			t5.parts_majordomo "shopTalent.partsMajordomo",
+			t5.parts_phone "shopTalent.partsPhone",
+			t5.sale_majordomo "shopTalent.saleMajordomo",
+			t5.sale_phone "shopTalent.salePhone",
+			t5.service_consultant "shopTalent.serviceConsultant",
+			t5.service_phones "shopTalent.servicePhones",
+			t6.shop_id "shopWorkshop.shopId",
+			t6.setup_station "shopWorkshop.setupStation",
+			t6.setup_number "shopWorkshop.setupNumber",
+			t6.quick_station "shopWorkshop.quickStation",
+			t6.quick_number "shopWorkshop.quickNumber",
+			t6.upkeep_station "shopWorkshop.upkeepStation",
+			t6.upkeep_number "shopWorkshop.upkeepNumber",
+			t6.machine_station "shopWorkshop.machineStation",
+			t6.machine_number "shopWorkshop.machineNumber",
+			t6.accident_station "shopWorkshop.accidentStation",
+			t6.accident_number "shopWorkshop.accidentNumber",
+			t6.decorate_station "shopWorkshop.decorateStation",
+			t6.decorate_number "shopWorkshop.decorateNumber",
+			t6.beauty_station "shopWorkshop.beautyStation",
+			t6.beauty_number "shopWorkshop.beautyNumber",
+			t6.washcar_station "shopWorkshop.washcarStation",
+			t6.washcar_number "shopWorkshop.washcarNumber",
+			t6.metal_station "shopWorkshop.metalStation",
+			t6.metal_number "shopWorkshop.metalNumber",
+			t6.paint_station "shopWorkshop.paintStation",
+			t6.paint_number "shopWorkshop.paintNumber"
+		FROM
+			t_tesla_shop t1
+		LEFT JOIN t_tesla_shop_hardware t3 ON t1.id = t3.shop_id
+		LEFT JOIN t_tesla_shop_sales t4 ON t1.id = t4.shop_id
+		LEFT JOIN t_tesla_shop_talent t5 ON t1.id = t5.shop_id
+		LEFT JOIN t_tesla_shop_workshop t6 ON t1.id = t6.shop_id
+		WHERE
+			t1.id = #{shopId}
+	</select>
+	
+	<update id="updateTeslaShop" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShop">
+		UPDATE t_tesla_shop SET modify_time=NOW()
+			<if test="shopType!=null">
+				,shop_type=#{shopType}
+			</if>
+			<if test="abcType!=null">
+				,abc_type=#{abcType}
+			</if>
+			<if test="shopStatus!=null">
+				,shop_status=#{shopStatus}
+			</if>
+			<if test="shopExpandStatus!=null">
+				,shop_expand_status=#{shopExpandStatus}
+			</if>	
+			<if test="monitorStatus!=null">
+				,monitor_status=#{monitorStatus}
+			</if>	
+			<if test="province!=null">
+				,province=#{province}
+			</if>
+			<if test="city!=null">
+				,city=#{city}
+			</if>
+			<if test="county!=null">
+				,county=#{county}
+			</if>
+			<if test="shopName!=null">
+				,shop_name=#{shopName}
+			</if>
+			<if test="shopAddress!=null">
+				,shop_address=#{shopAddress}
+			</if>
+			<if test="companyName!=null">
+				,company_name=#{companyName}
+			</if>
+			<if test="openTime!=null">
+				,open_time=#{openTime}
+			</if>
+			<if test="bdOwner!=null">
+				,bd_owner=#{bdOwner}
+			</if>
+			<if test="isChezhuka!=null">
+				,is_chezhuka=#{isChezhuka}
+			</if>
+			<if test="manager!=null">
+				,manager=#{manager}
+			</if>
+			<if test="linkPhone!=null">
+				,link_phone=#{linkPhone}
+			</if>
+			<if test="phone!=null">
+				,phone=#{phone}
+			</if>
+			<if test="complaintPhone!=null">
+				,complaint_phone=#{complaintPhone}
+			</if>
+			<if test="dayLinker!=null">
+				,day_linker=#{dayLinker}
+			</if>
+			<if test="lightBox!=null">
+				,light_box=#{lightBox}
+			</if>
+			<if test="backWall!=null">
+				,back_wall=#{backWall}
+			</if>
+			<if test="fieldArea!=null">
+				,field_area=#{fieldArea}
+			</if>
+			<if test="workshopArea!=null">
+				,workshop_area=#{workshopArea}
+			</if>
+			<if test="persons!=null">
+				,persons=#{persons}
+			</if>
+			<if test="subBranchs!=null">
+				,sub_branchs=#{subBranchs}
+			</if>
+			<if test="bdPhone!=null">
+				,bd_phone=#{bdPhone}
+			</if>
+			<if test="aftersalesManager!=null">
+				,aftersales_manager=#{aftersalesManager}
+			</if>
+			<if test="aftersalesPhone!=null">
+				,aftersales_phone=#{aftersalesPhone}
+			</if>
+			<if test="linkerL45Photo!=null">
+				,linker_l45_photo=#{linkerL45Photo}
+			</if>
+			<if test="linkerR45Photo!=null">
+				,linker_r45_photo=#{linkerR45Photo}
+			</if>
+			<if test="fullViewPhoto!=null">
+				,full_view_photo=#{fullViewPhoto}
+			</if>
+			<if test="featurePhoto!=null">
+				,feature_photo=#{featurePhoto}
+			</if>
+		WHERE id=#{id}
+	</update>
+	
+	<delete id="deleteTeslaShopBrandByShopId">
+		delete from t_tesla_shop_brand WHERE shop_id = #{shopId}
+	</delete>
+	
+	<update id="updateTeslaShopHardware" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopHardware">
+		update t_tesla_shop_hardware set modify_time=NOW()
+			<if test="carLeft!=null">
+				,car_left=#{carLeft}
+			</if>
+			<if test="fourWheel!=null">
+				,four_wheel=#{fourWheel}
+			</if>
+			<if test="engine!=null">
+				,engine=#{engine}
+			</if>
+			<if test="press!=null">
+				,press=#{press}
+			</if>
+			<if test="jack!=null">
+				,jack=#{jack}
+			</if>
+			<if test="curingBarn!=null">
+				,curing_barn=#{curingBarn}
+			</if>			
+			<if test="polisher!=null">
+				,polisher=#{polisher}
+			</if>	
+			<if test="grinding!=null">
+				,grinding=#{grinding}
+			</if>		
+			<if test="carWash!=null">
+				,car_wash=#{carWash}
+			</if>		
+			<if test="hairdressing!=null">
+				,hairdressing=#{hairdressing}
+			</if>		
+			<if test="specialComputer!=null">
+				,special_computer=#{specialComputer}
+			</if>		
+			<if test="commonComputer!=null">
+				,common_computer=#{commonComputer}
+			</if>		
+			<if test="balancer!=null">
+				,balancer=#{balancer}
+			</if>		
+			<if test="cleaner!=null">
+				,cleaner=#{cleaner}
+			</if>		
+			<if test="hotLamps!=null">
+				,hot_lamps=#{hotLamps}
+			</if>		
+			<if test="sander!=null">
+				,sander=#{sander}
+			</if>		
+			<if test="inspection!=null">
+				,inspection=#{inspection}
+			</if>		
+			<if test="carCleaner!=null">
+				,car_cleaner=#{carCleaner}
+			</if>		
+			<if test="waterTorch!=null">
+				,water_torch=#{waterTorch}
+			</if>		
+			<if test="transJack!=null">
+				,trans_jack=#{transJack}
+			</if>	
+			<if test="tester!=null">
+				,tester=#{tester}
+			</if>	
+			<if test="vacuumCleaner!=null">
+				,vacuum_cleaner=#{vacuumCleaner}
+			</if>	
+			<if test="repair!=null">
+				,repair=#{repair}
+			</if>	
+			<if test="carWasher!=null">
+				,car_washer=#{carWasher}
+			</if>	
+			<if test="coatingMachine!=null">
+				,coating_machine=#{coatingMachine}
+			</if>
+			<if test="nozzle!=null">
+				,nozzle=#{nozzle}
+			</if>	
+		where shop_id = #{shopId}							
+	</update>
+		
+	<update id="updateTeslaShopSales" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopSales">
+		update t_tesla_shop_sales set modify_time=NOW()
+			<if test="saleArea!=null">
+				,sale_area=#{saleArea}
+			</if>
+			<if test="space!=null">
+				,space=#{space}
+			</if>
+			<if test="district!=null">
+				,district=#{district}
+			</if>
+			<if test="custRest!=null">
+				,cust_rest=#{custRest}
+			</if>
+			<if test="custExper!=null">
+				,cust_exper=#{custExper}
+			</if>
+			<if test="districtPhoto!=null">
+				,district_photo=#{districtPhoto}
+			</if>
+			<if test="custRestPhoto!=null">
+				,cust_rest_photo=#{custRestPhoto}
+			</if>
+			<if test="custExperPhoto!=null">
+				,cust_exper_photo=#{custExperPhoto}
+			</if>
+			<if test="saleManager!=null">
+				,sale_manager=#{saleManager}
+			</if>
+			<if test="managerPhone!=null">
+				,manager_phone=#{managerPhone}
+			</if>
+			<if test="saleCounselor!=null">
+				,sale_counselor=#{saleCounselor}
+			</if>
+			<if test="counselorNumber!=null">
+				,counselor_number=#{counselorNumber}
+			</if>
+		where shop_id = #{shopId}							
+	</update>
+	
+	<update id="updateTeslaShopTalent" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopTalent">
+		update t_tesla_shop_talent set modify_time=NOW()
+			<if test="aftersaleManager!=null">
+				,aftersale_manager=#{aftersaleManager}
+			</if>
+			<if test="aftersalePhone!=null">
+				,aftersale_phone=#{aftersalePhone}
+			</if>
+			<if test="serviceMajordomo!=null">
+				,service_majordomo=#{serviceMajordomo}
+			</if>
+			<if test="servicePhone!=null">
+				,service_phone=#{servicePhone}
+			</if>
+			<if test="techMajordomo!=null">
+				,tech_majordomo=#{techMajordomo}
+			</if>
+			<if test="techPhone!=null">
+				,tech_phone=#{techPhone}
+			</if>
+			<if test="marketingMajordomo!=null">
+				,marketing_majordomo=#{marketingMajordomo}
+			</if>
+			<if test="marketingPhone!=null">
+				,marketing_phone=#{marketingPhone}
+			</if>
+			<if test="partsMajordomo!=null">
+				,parts_majordomo=#{partsMajordomo}
+			</if>
+			<if test="partsPhone!=null">
+				,parts_phone=#{partsPhone}
+			</if>
+			<if test="saleMajordomo!=null">
+				,sale_majordomo=#{saleMajordomo}
+			</if>
+			<if test="salePhone!=null">
+				,sale_phone=#{salePhone}
+			</if>
+			<if test="serviceConsultant!=null">
+				,service_consultant=#{serviceConsultant}
+			</if>			
+			<if test="servicePhones!=null">
+				,service_phones=#{servicePhones}
+			</if>
+		where shop_id = #{shopId}							
+	</update>
+	
+	<update id="updateTeslaShopWorkshop" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopWorkshop">
+		update t_tesla_shop_workshop set modify_time=NOW()
+			<if test="setupStation!=null">
+				,setup_station=#{setupStation}
+			</if>
+			<if test="setupNumber!=null">
+				,setup_number=#{setupNumber}
+			</if>
+			<if test="quickStation!=null">
+				,quick_station=#{quickStation}
+			</if>
+			<if test="quickNumber!=null">
+				,quick_number=#{quickNumber}
+			</if>
+			<if test="upkeepStation!=null">
+				,upkeep_station=#{upkeepStation}
+			</if>
+			<if test="upkeepNumber!=null">
+				,upkeep_number=#{upkeepNumber}
+			</if>
+			<if test="machineStation!=null">
+				,machine_station=#{machineStation}
+			</if>
+			<if test="machineNumber!=null">
+				,machine_number=#{machineNumber}
+			</if>
+			<if test="accidentStation!=null">
+				,accident_station=#{accidentStation}
+			</if>
+			<if test="accidentNumber!=null">
+				,accident_number=#{accidentNumber}
+			</if>
+			<if test="decorateStation!=null">
+				,decorate_station=#{decorateStation}
+			</if>			
+			<if test="decorateNumber!=null">
+				,decorate_number=#{decorateNumber}
+			</if>			
+			<if test="beautyStation!=null">
+				,beauty_station=#{beautyStation}
+			</if>			
+			<if test="beautyNumber!=null">
+				,beauty_number=#{beautyNumber}
+			</if>			
+			<if test="washcarStation!=null">
+				,washcar_station=#{washcarStation}
+			</if>			
+			<if test="washcarNumber!=null">
+				,washcar_number=#{washcarNumber}
+			</if>			
+			<if test="metalStation!=null">
+				,metal_station=#{metalStation}
+			</if>			
+			<if test="metalNumber!=null">
+				,metal_number=#{metalNumber}
+			</if>	
+			<if test="paintStation!=null">
+				,paint_station=#{paintStation}
+			</if>	
+			<if test="paintNumber!=null">
+				,paint_number=#{paintNumber}
+			</if>
+		where shop_id = #{shopId}							
+	</update>
+	
+	<select id="countTeslaShopBrandByShopId" resultType="int">
+		select count(*) from t_tesla_shop_brand where shop_id = #{shopId}
+	</select>
+
+	<select id="countTeslaShopHardwareByShopId" resultType="int">
+		select count(*) from t_tesla_shop_hardware where shop_id = #{shopId}
+	</select>
+
+	<select id="countTeslaShopSalesByShopId" resultType="int">
+		select count(*) from t_tesla_shop_sales where shop_id = #{shopId}
+	</select>
+
+	<select id="countTeslaShopTalentByShopId" resultType="int">
+		select count(*) from t_tesla_shop_talent where shop_id = #{shopId}
+	</select>
+
+	<select id="countTeslaShopWorkshopByShopId" resultType="int">
+		select count(*) from t_tesla_shop_workshop where shop_id = #{shopId}
+	</select>
+	
+	<select id="statTeslaShopByType" resultType="com.home.ferrari.vo.tesla.shop.ShopData">
+		SELECT
+			CASE
+				WHEN t.shop_type = 1 THEN
+					'chematou'
+				WHEN t.shop_type = 2 THEN
+					'cuntao'
+				WHEN t.shop_type = 4 THEN
+					'xingao'
+				ELSE
+					'X'
+			END shopType,
+		    CASE
+				WHEN t.abc_type = 1 THEN
+					'A'
+				WHEN t.abc_type = 2 THEN
+					'B'
+				WHEN t.abc_type = 3 THEN
+					'C'
+				WHEN t.abc_type = 4 THEN
+					'D'
+				ELSE
+					'Y'
+			END abcType,
+		 	count(*) sum
+		FROM
+			t_tesla_shop t
+		WHERE t.shop_status!=404	
+		GROUP BY
+			t.shop_type,
+			t.abc_type
+	</select>
+	
+	<select id="getTeslaShopIds" resultType="int">
+		select id from t_tesla_shop
+		<where>
+		    shop_status != 404
+			<if test="shopName!=null">
+			     and shop_name like CONCAT('%',#{shopName},'%' )
+			</if>     
+			<if test="province!=null">
+			     and province=#{province}
+			</if>
+			<if test="city!=null">
+			     and city=#{city}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.sale.SaleOrderTraceDao">
+	<insert id="insertSaleOrderTrace" parameterType="com.home.ferrari.vo.sale.SaleOrderTrace" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_sale_order_trace (
+			biz_order_id,
+			taobao_order_status,
+			shop_order_status,
+			shop_id,
+			operator_type,
+			operator_id,
+			operator_nick_name,
+			is_show,
+			trace_attr,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{bizOrderId},
+			#{taobaoOrderStatus},
+			#{shopOrderStatus},
+			#{shopId},
+			#{operatorType},
+			#{operatorId},
+			#{operatorNickName},
+			#{isShow},
+			#{traceAttr},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getSaleOrderTraceListByBizOrderId" resultType="com.home.ferrari.vo.sale.SaleOrderTrace">
+		select  id id,
+				biz_order_id bizOrderId,
+				taobao_order_status taobaoOrderStatus,
+				shop_order_status shopOrderStatus,
+				shop_id shopId,
+				operator_type operatorType,
+				operator_id operatorId,
+				operator_nick_name operatorNickName,
+				is_show isShow,
+				trace_attr traceAttr,
+			   date_format(create_time,'%Y-%m-%d %H:%i:%s') operatorTime
+		from t_sale_order_trace 
+		where biz_order_id=#{bizOrderId} and is_show=1
+		order by create_time asc 
+	</select>
+</mapper>

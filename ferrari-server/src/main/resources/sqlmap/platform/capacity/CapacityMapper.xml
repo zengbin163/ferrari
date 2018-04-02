@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.capacity.CapacityDao">
+	<select id="getCapacityList" resultType="com.home.ferrari.vo.capacity.Capacity">
+		call getChildLst(#{capacityId})
+	</select>
+	<select id="getCapacityId" resultType="int">
+		select atom_id atomId from t_capacity_id where id=1
+	</select>
+	<update id="updateCapacityAtomId" parameterType="int">
+		update t_capacity_id set atom_id = #{atomId} 
+		where id=1 and <![CDATA[ atom_id < #{atomId} ]]>
+	</update>
+	<select id="getCapacityById" resultType="com.home.ferrari.vo.capacity.Capacity">
+		select id id,
+			   parent_id parentId,
+			   name name,
+			   deep deep,
+			   node_count nodeCount,
+			   group_id groupId,
+			   is_leaf isLeaf
+		from t_capacity 
+		where id=#{id}	   
+	</select>
+	<update id="updateCapacity" parameterType="com.home.ferrari.vo.capacity.Capacity">
+		update t_capacity set modify_time=now(),
+			parent_id=#{parentId},
+			name=#{name},
+			deep=#{deep},
+			node_count=#{nodeCount},
+			group_id=#{groupId},
+			is_leaf=#{isLeaf}
+		where id=#{id}
+	</update>
+	<insert id="insertCapacity" parameterType="com.home.ferrari.vo.capacity.Capacity">
+		INSERT INTO t_capacity (
+		    id,
+		    parent_id,
+		    name,
+		    deep,
+		    node_count,
+			group_id,
+			is_leaf,
+			create_time,
+			modify_time
+		) VALUES(
+		    #{id},
+		    #{parentId},
+		    #{name},
+		    #{deep},
+		    #{nodeCount},
+			#{groupId},
+			#{isLeaf},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	<delete id="deleteCapacityByGroupId">
+		delete from t_capacity where group_id=#{groupId}
+	</delete>
+	
+	<select id="getCapacitySelect" resultType="com.home.ferrari.vo.capacity.Capacity">
+		select id id,
+			   parent_id parentId,
+			   name name,
+			   deep deep,
+			   node_count nodeCount,
+			   group_id groupId,
+			   is_leaf isLeaf
+		from t_capacity 
+		where parent_id in (1,2,3)
+		order by parent_id ASC  
+	</select>
+</mapper>

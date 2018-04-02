@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.tesla.TeslaUserRoleDao">
+ 
+	<sql id="selectTeslaUserRoleId">
+		select id id,
+			user_id userId,
+			role_id roleId
+		from t_tesla_user_role
+	</sql>
+	
+	<insert id="insertTeslaUserRole" parameterType="com.home.ferrari.vo.tesla.user.TeslaUserRole" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_tesla_user_role (
+			user_id,
+			role_id,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{userId},
+			#{roleId},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getTeslaUserRoleByUserAndRole" resultType="com.home.ferrari.vo.tesla.user.TeslaUserRole"> 
+		<include refid="selectTeslaUserRoleId" />
+		where user_id = #{userId} and role_id = #{roleId}
+	</select>
+
+</mapper>

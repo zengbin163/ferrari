@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.tesla.TeslaUserDao">
+ 
+	<sql id="selectTeslaUserId">
+		select id id,
+		    shop_id shopId,
+			nick_name nickName,
+			mobile mobile,
+			register_time registerTime,
+			header_url headerUrl,
+			modify_time modifyTime,
+			signature signature,
+			version version
+		from t_tesla_user
+	</sql>
+
+	<select id="getTeslaUserByMobileAndPassword" resultType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		<include refid="selectTeslaUserId" />
+		where mobile=#{mobile} and password=#{password} and is_active=1
+	</select>
+
+	<select id="getTeslaUserByMobile" resultType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		select id id,
+		    shop_id shopId,
+			nick_name nickName,
+			mobile mobile,
+			password password,
+			register_time registerTime,
+			header_url headerUrl,
+			modify_time modifyTime,
+			signature signature,
+			version version
+		from t_tesla_user
+		where mobile=#{mobile} and is_active=1
+	</select>
+
+	<select id="getTeslaUserById" resultType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		<include refid="selectTeslaUserId" />
+		where id=#{id} and is_active=1
+	</select>
+
+	<select id="getTeslaUserByShopId" resultType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		<include refid="selectTeslaUserId" />
+		where shop_id=#{shopId}
+	</select>
+
+	<insert id="insertTeslaUser" parameterType="com.home.ferrari.vo.tesla.user.TeslaUser" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_tesla_user (
+			shop_id,
+			nick_name,
+			mobile,
+			password,
+			register_time,
+			header_url,
+			signature,
+			modify_time,
+			version,
+			is_active
+		)
+		VALUES(
+			#{shopId},
+			#{nickName},
+			#{mobile},
+			#{password},
+			NOW(),
+			#{headerUrl},
+			#{signature},
+			NOW(),
+			1,
+			1
+		)
+	</insert>
+	
+	<update id="updateTeslaUser" parameterType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		update t_tesla_user set modify_time = NOW()
+		<if test="nickName!=null">
+			,nick_name = #{nickName}
+		</if>
+		<if test="password!=null">
+			,password = #{password}
+		</if>
+		<if test="headerUrl!=null">
+			,header_url = #{headerUrl}
+		</if>
+		<if test="signature!=null">
+			,signature = #{signature}
+		</if>
+		<if test="version!=null">
+			,version = #{version}
+		</if>
+		<if test="isActive!=null">
+			,is_active = #{isActive}
+		</if>
+		<![CDATA[
+			where id = #{id} and version < #{version} 
+		]]>	
+	</update>
+
+	<update id="updateTeslaUserByShopId" parameterType="com.home.ferrari.vo.tesla.user.TeslaUser">
+		update t_tesla_user set modify_time = NOW()
+		<if test="nickName!=null">
+			,nick_name = #{nickName}
+		</if>
+		<if test="password!=null">
+			,password = #{password}
+		</if>
+		<if test="headerUrl!=null">
+			,header_url = #{headerUrl}
+		</if>
+		<if test="signature!=null">
+			,signature = #{signature}
+		</if>
+		<if test="version!=null">
+			,version = #{version}
+		</if>
+		<if test="isActive!=null">
+			,is_active = #{isActive}
+		</if>
+		<![CDATA[
+			where shop_id = #{shopId} and version < #{version} 
+		]]>	
+	</update>
+</mapper>

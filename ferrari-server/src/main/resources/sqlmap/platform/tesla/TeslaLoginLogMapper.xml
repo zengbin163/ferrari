@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.tesla.TeslaLoginLogDao">
+	<insert id="insertTeslaLoginLog" parameterType="com.home.ferrari.vo.tesla.user.TeslaLoginLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_tesla_login_log (
+			user_id,
+			mobile,
+			session_id,
+			login_ip,
+			login_time
+		)
+		VALUES(
+			#{userId},
+			#{mobile},
+			#{sessionId},
+			#{loginIp},
+			NOW()
+		)
+	</insert>
+</mapper>

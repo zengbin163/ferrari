@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.crmdao.crm.CrmUserDao">
+ 
+	<sql id="selectCrmUserId">
+		select id id,
+			mobile mobile,
+			login_no loginNo,
+			password password,
+			user_name userName,
+			address address,
+			admin_id adminId,
+			role_id roleId,
+			department_id departmentId,
+			is_active isActive,
+			can_sms canSms,
+			shop_id	shopId,
+			shop_name shopName,
+			shop_company shopCompany,
+			shop_address shopAddress,
+			crm_shop_name crmShopName,
+			crm_shop_company crmShopCompany,
+			crm_province crmProvince,
+			crm_city crmCity,
+			crm_shop_address crmShopAddress,
+			register_time registerTime,
+			modify_time modifyTime	
+		from t_crm_user
+	</sql>
+	<insert id="insertCrmUser" parameterType="com.home.ferrari.vo.crm.CrmUser" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_user (
+			mobile,
+			login_no,
+			password,
+			user_name,
+			address,
+			admin_id,
+			role_id,
+			department_id,
+			is_active,
+			can_sms,
+			shop_id,
+			shop_name,
+			shop_company,
+			shop_address,
+			crm_shop_name,
+			crm_shop_company,
+			crm_province,
+			crm_city,
+			crm_shop_address,
+			register_time,
+			modify_time
+		)
+		VALUES(
+			#{mobile},
+			#{loginNo},
+			#{password},
+			#{userName},
+			#{address},
+			#{adminId},
+			#{roleId},
+			#{departmentId},
+			1,
+			1,
+			#{shopId},
+			#{shopName},
+			#{shopCompany},
+			#{shopAddress},
+			#{crmShopName},
+			#{crmShopCompany},
+			#{crmProvince},
+			#{crmCity},
+			#{crmShopAddress},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertCrmUserBizType" parameterType="com.home.ferrari.vo.crm.CrmUserBizType" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_user_biztype (
+		    crm_user_id,
+		    biz_type,
+			create_time
+		)
+		VALUES(
+			#{crmUserId},
+			#{bizType},
+			NOW()
+		)
+	</insert>
+	
+	<select id="getCrmUserBizTypeList" resultType="com.home.ferrari.vo.crm.CrmUserBizType">
+		select crm_user_id crmUserId,
+		    biz_type bizType,
+			create_time createTime
+		from t_crm_user_biztype
+		where crm_user_id = #{crmUserId}	
+	</select>
+	
+	<update id="updateCrmUser" parameterType="com.home.ferrari.vo.crm.CrmUser">
+		update t_crm_user set modify_time = NOW()
+		<if test="mobile!=null">
+			,mobile = #{mobile}
+		</if>
+		<if test="loginNo!=null">
+			,login_no = #{loginNo}
+		</if>
+		<if test="password!=null">
+			,password = #{password}
+		</if>
+		<if test="userName!=null">
+			,user_name = #{userName}
+		</if>
+		<if test="address!=null">
+			,address = #{address}
+		</if>
+		<if test="adminId!=null">
+			,admin_id = #{adminId}
+		</if>
+		<if test="roleId!=null">
+			,role_id = #{roleId}
+		</if>
+		<if test="departmentId!=null">
+			,department_id = #{departmentId}
+		</if>
+		<if test="isActive!=null">
+			,is_active = #{isActive}
+		</if>
+		<if test="canSms!=null">
+			,can_sms = #{canSms}
+		</if>
+		<if test="shopId!=null">
+			,shop_id = #{shopId}
+		</if>
+		<if test="shopName!=null">
+			,shop_name = #{shopName}
+		</if>
+		<if test="shopCompany!=null">
+			,shop_company = #{shopCompany}
+		</if>
+		<if test="shopAddress!=null">
+			,shop_address = #{shopAddress}
+		</if>
+		<if test="crmShopName!=null">
+			,crm_shop_name = #{crmShopName}
+		</if>
+		<if test="crmShopCompany!=null">
+			,crm_shop_company = #{crmShopCompany}
+		</if>
+		<if test="crmShopAddress!=null">
+			,crm_shop_address = #{crmShopAddress}
+		</if>
+		<if test="crmProvince!=null">
+			,crm_province = #{crmProvince}
+		</if>
+		<if test="crmCity!=null">
+			,crm_city = #{crmCity}
+		</if>
+		<![CDATA[
+			where id = #{id}
+		]]>	
+	</update>
+
+	<delete id="deleteCrmUser">
+		delete from t_crm_user where id=#{crmUserId}
+	</delete>
+
+	<delete id="deleteCrmUserBizType">
+		delete from t_crm_user_biztype where crm_user_id=#{crmUserId}
+	</delete>
+
+	<select id="getCrmUserByLoginNoAndPassword" resultType="com.home.ferrari.vo.crm.CrmUser">
+		select  t1.id id,
+				t1.mobile mobile,
+				t1.login_no loginNo,
+				t1.user_name userName,
+				t1.address address,
+				t1.admin_id adminId,
+				t1.role_id roleId,
+				t1.department_id departmentId,
+				t1.is_active isActive,
+				t1.can_sms canSms,
+				t1.register_time registerTime,
+				t1.shop_id	shopId,
+				t1.shop_name shopName,
+				t1.shop_company shopCompany,
+				t1.shop_address shopAddress,
+				t1.crm_shop_name crmShopName,
+				t1.crm_shop_company crmShopCompany,
+				t1.crm_province crmProvince,
+				t1.crm_city crmCity,
+				t1.crm_shop_address crmShopAddress,
+		        t2.role_name roleName,
+		        t2.role_type roleType
+		FROM t_crm_user t1
+		LEFT JOIN t_crm_role t2 ON t1.role_id = t2.id
+		where (t1.login_no=#{loginNo} or t1.mobile=#{loginNo}) 
+			and t1.password=#{password} and t1.is_active=1
+	</select>
+
+	<select id="getCrmUserByLoginNo" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where login_no=#{loginNo} and is_active=1
+	</select>
+
+	<select id="getCrmUserByLoginNoAndId" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where login_no=#{loginNo} and id!=#{crmUserId}
+	</select>
+
+	<select id="getCrmUserByMobileAndId" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where mobile=#{mobile} and id!=#{crmUserId}
+	</select>
+
+	<select id="getCrmUserByUserNameAndCrmShopNameAndId" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where crm_shop_name=#{crmShopName} and user_name=#{userName} and id!=#{crmUserId}
+	</select>
+
+	<select id="getCrmUserById" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where id=#{crmUserId} and is_active=1
+	</select>
+
+	<select id="getCrmUserInfoById" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where id=#{crmUserId}
+	</select>
+
+	<select id="getCrmUserByShopName" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where shop_name=#{shopName}
+	</select>
+
+	<select id="getCrmUserByCrmShopName" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where crm_shop_name=#{crmShopName}
+	</select>
+
+	<select id="getCrmUserByCrmShopNameAndUserName" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where crm_shop_name=#{crmShopName} and user_name=#{userName}
+	</select>
+
+	<select id="getCrmUserByMobile" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where mobile=#{mobile}
+	</select>
+
+	<select id="getCrmUserByShopId" resultType="com.home.ferrari.vo.crm.CrmUser">
+		<include refid="selectCrmUserId" />
+		where shop_id=#{shopId}
+	</select>
+
+	<insert id="insertCrmLoginLog" parameterType="com.home.ferrari.vo.crm.CrmLoginLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_login_log (
+			crm_user_id,
+			login_no,
+			session_id,
+			login_ip,
+			login_time
+		)
+		VALUES(
+			#{crmUserId},
+			#{loginNo},
+			#{sessionId},
+			#{loginIp},
+			NOW()
+		)
+	</insert>
+	
+	<select id="getCrmUserMenuList" resultType="com.home.ferrari.vo.crm.CrmRoleMenu">
+		SELECT
+	        distinct
+	        t1.id crmUserId,
+			t2.id roleId,
+			t2.role_type roleType,
+			t4.id menuId,
+			t4.is_menu isMenu,
+			t4.parent_id parentMenuId,
+			t4.menu_name menuName,
+			t4.menu_en_name menuEnName,
+			t4.menu_url menuUrl
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		JOIN t_crm_role_menu t3 ON t2.id = t3.role_id
+		JOIN t_crm_menu t4 ON t3.menu_id = t4.id
+		WHERE
+			t1.id = #{crmUserId}
+	</select> 
+	<select id="getCrmSystemMenuList" resultType="com.home.ferrari.vo.crm.CrmRoleMenu">
+		SELECT
+			t4.id menuId,
+			t4.is_menu isMenu,
+			t4.parent_id parentMenuId,
+			t4.menu_name menuName,
+			t4.menu_en_name menuEnName,
+			t4.menu_url menuUrl
+		FROM t_crm_menu t4
+	</select> 
+	
+	<select id="getCrmUserListByRoleType" resultType="com.home.ferrari.vo.crm.CrmUser">
+		select  t1.id id,
+				t1.mobile mobile,
+				t1.login_no loginNo,
+				t1.user_name userName,
+				t1.address address,
+				t1.admin_id adminId,
+				t1.role_id roleId,
+				t1.department_id departmentId,
+				t1.is_active isActive,
+				t1.can_sms canSms,
+				t1.register_time registerTime,
+				t1.shop_id	shopId,
+				t1.shop_name shopName,
+				t1.shop_company shopCompany,
+				t1.shop_address shopAddress,
+		        t2.role_name roleName,
+		        t2.role_type roleType
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		<where>
+			t1.is_active=1
+			<if test="roleType!=null">
+				and t2.role_type = #{roleType}
+			</if>
+		</where>
+	</select>
+	<select id="countCrmUserListByRoleType" resultType="int">
+		select count(*)
+		   FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		<where>
+			t1.is_active=1
+			<if test="roleType!=null">
+				and t2.role_type = #{roleType}
+			</if>
+		</where>
+	</select>
+
+	<select id="getCrmUserList" resultType="com.home.ferrari.vo.crm.CrmUser">
+		select  t1.id id,
+				t1.mobile mobile,
+				t1.login_no loginNo,
+				t1.user_name userName,
+				t1.shop_id	shopId,
+				t1.shop_name shopName,
+				t1.shop_company shopCompany,
+				t1.shop_address shopAddress,
+				t1.crm_shop_name crmShopName,
+				t1.crm_shop_company crmShopCompany,
+				t1.crm_province crmProvince,
+				t1.crm_city crmCity,
+				t1.crm_shop_address crmShopAddress,
+				t1.is_active isActive,
+				t1.can_sms canSms,
+		        t2.role_name roleName,
+		        t2.role_type roleType,
+		        t3.user_name adminName,
+		        t3.mobile adminMobile
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		LEFT JOIN t_crm_user t3 ON t1.admin_id = t3.id
+		<where>
+			<if test="roleType!=null">
+				t2.role_type = #{roleType}
+			</if>
+			<if test="adminId!=null">
+				and t1.admin_id = #{adminId}
+			</if>
+			<if test="shopIdList!=null">
+				 and t1.shop_id in
+				 <foreach item="item" index="index" collection="shopIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+		</where>
+	</select>
+	<select id="countCrmUserList" resultType="int">
+		select count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		LEFT JOIN t_crm_user t3 ON t1.admin_id = t3.id
+		<where>
+			<if test="roleType!=null">
+				t2.role_type = #{roleType}
+			</if>
+			<if test="adminId!=null">
+				and t1.admin_id = #{adminId}
+			</if>
+			<if test="shopIdList!=null">
+				 and t1.shop_id in
+				 <foreach item="item" index="index" collection="shopIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+		</where>
+	</select>
+	
+	<select id="getCrmClerkList" resultType="com.home.ferrari.vo.crm.CrmUser">
+		select  t1.id id,
+				t1.mobile mobile,
+				t1.login_no loginNo,
+				t1.user_name userName,
+				t1.shop_id	shopId,
+				t1.shop_name shopName,
+				t1.shop_company shopCompany,
+				t1.shop_address shopAddress,
+				t1.crm_shop_name crmShopName,
+				t1.crm_shop_company crmShopCompany,
+				t1.crm_province crmProvince,
+				t1.crm_city crmCity,
+				t1.crm_shop_address crmShopAddress,
+				t1.is_active isActive,
+				t1.can_sms canSms,
+		        t2.role_name roleName,
+		        t2.role_type roleType,
+		        t3.user_name adminName,
+		        t3.mobile adminMobile
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		LEFT JOIN t_crm_user t3 ON t1.admin_id = t3.id
+		<where>
+			t2.role_type in (2,3) 
+			<if test="isActive!=null">
+				and t1.is_active = #{isActive}
+			</if>
+			<if test="adminId!=null">
+				and (t1.admin_id = #{adminId} or (t1.admin_id is null and t1.id=#{adminId}))
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+		</where>
+	</select>
+	<select id="countCrmClerkList" resultType="int">
+		select count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		LEFT JOIN t_crm_user t3 ON t1.admin_id = t3.id
+		<where>
+			t2.role_type in (2,3) 
+			<if test="isActive!=null">
+				and t1.is_active = #{isActive}
+			</if>
+			<if test="adminId!=null">
+				and (t1.admin_id = #{adminId} or (t1.admin_id is null and t1.id=#{adminId}))
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="getCrmAdminList" resultType="com.home.ferrari.vo.crm.CrmUser">
+		select  t1.id id,
+				t1.mobile mobile,
+				t1.login_no loginNo,
+				t1.user_name userName,
+				t1.shop_id	shopId,
+				t1.shop_name shopName,
+				t1.shop_company shopCompany,
+				t1.shop_address shopAddress,
+				t1.crm_shop_name crmShopName,
+				t1.crm_shop_company crmShopCompany,
+				t1.crm_province crmProvince,
+				t1.crm_city crmCity,
+				t1.crm_shop_address crmShopAddress,
+				t1.is_active isActive,
+				t1.can_sms canSms,
+				(select count(*) from t_crm_user x where x.admin_id = t1.id) clerkSum,
+		        t2.role_name roleName,
+		        t2.role_type roleType
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		<where>
+			t2.role_type = 2 
+			<if test="isActive!=null">
+				and t1.is_active = #{isActive}
+			</if>
+			<if test="crmProvince!=null">
+				and t1.crm_province = #{crmProvince}
+			</if>
+			<if test="crmCity!=null">
+				and t1.crm_city = #{crmCity}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+		</where>
+	</select>
+	<select id="countCrmAdminList" resultType="int">
+		select count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_crm_role t2 ON t1.role_id = t2.id
+		<where>
+			t2.role_type = 2 
+			<if test="isActive!=null">
+				and t1.is_active = #{isActive}
+			</if>
+			<if test="crmProvince!=null">
+				and t1.crm_province = #{crmProvince}
+			</if>
+			<if test="crmCity!=null">
+				and t1.crm_city = #{crmCity}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="validateBizAdminBelongCompany" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_crm_user t2 ON (t1.id = t2.admin_id OR t1.id = t2.id)
+		WHERE
+			t1.is_active = 1
+		AND t2.is_active = 1
+		AND 
+			(
+				(t2.admin_id = #{adminId} AND t2.id = #{crmUserId})
+				OR
+				(t1.id = #{adminId} AND t2.id = #{crmUserId})
+			)
+	</select>
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.breakdoc.BreakDocumentDao">
+
+	<insert id="insertBreakDocument" parameterType="com.home.ferrari.vo.breakdoc.BreakDocument" useGeneratedKeys="true" keyProperty="breakId">
+		insert into t_break_document(
+			shop_id,
+			title,
+			doc_status,
+			car_model,
+			car_part,
+			remark,
+			text,
+			create_time,
+			modify_time
+		) values (
+			#{shopId},
+			#{title},
+			#{docStatus},
+			#{carModel},
+			#{carPart},
+			#{remark},
+			#{text},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	<insert id="insertBreakTypelist" parameterType="com.home.ferrari.vo.breakdoc.BreakTypelist" useGeneratedKeys="true" keyProperty="id">
+		insert into t_break_typelist(
+			break_id,
+			break_type_id
+		) values (
+			#{breakId},
+			#{breakTypeId}
+		)
+	</insert>
+	
+	<insert id="insertBreakTrace" parameterType="com.home.ferrari.vo.breakdoc.BreakTrace">
+		insert into t_break_trace(
+			break_id,
+			remark,
+			create_time
+		) values (
+			#{breakId},
+			#{remark},
+			NOW()
+		)
+	</insert>
+	
+	<delete id="deleteBreakTypeListByBreakId">
+		delete from t_break_typelist where break_id = #{breakId}
+	</delete>
+	
+	
+	<update id="updateBreakDocument" parameterType="com.home.ferrari.vo.breakdoc.BreakDocument">
+		update t_break_document set modify_time=NOW()
+		<if test="title!=null">
+			,title=#{title}
+		</if>
+		<if test="docStatus!=null">
+			,doc_status=#{docStatus}
+		</if>
+		<if test="carModel!=null">
+			,car_model=#{carModel}
+		</if>
+		<if test="carPart!=null">
+			,car_part=#{carPart}
+		</if>
+		<if test="remark!=null">
+			,remark=#{remark}
+		</if>
+		<if test="text!=null">
+			,text=#{text}
+		</if>
+		<![CDATA[
+			where id = #{breakId}
+		]]>	
+	</update>
+	
+	<select id="getBreakDocumentList" resultType="com.home.ferrari.vo.breakdoc.BreakDocument">
+		SELECT
+		    t.id breakId,
+			t.title title,
+			t.doc_status docStatus,
+			t.car_model carModel,
+			t.car_part carPart,
+			t.remark remark,
+			t.text text,
+			t.create_time createTime,
+			t.modify_time modifyTime
+		FROM t_break_document t
+		<if test="breakTypeName!=null">
+			LEFT JOIN t_break_typelist t1 ON t1.break_id = t.id
+			LEFT JOIN t_break_type t2 ON t1.break_type_id = t2.id
+		</if>
+		<where>
+			<if test="shopId!=null"> 
+				and t.shop_id = #{shopId}
+			</if>
+			<if test="title!=null"> 
+				t.title like CONCAT('%',#{title},'%')
+			</if>
+			<if test="carModel!=null"> 
+				and t.car_model like CONCAT('%',#{carModel},'%')
+			</if>
+			<if test="carPart!=null"> 
+				and t.car_part like CONCAT('%',#{carPart},'%')
+			</if>
+			<if test="remark!=null"> 
+				and t.remark like CONCAT('%',#{remark},'%')
+			</if>
+			<if test="docStatus!=null"> 
+				and t.doc_status = #{docStatus}
+			</if>
+			<if test="breakTypeName!=null">
+				and t2.name like CONCAT('%',#{breakTypeName},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="getBreakDocumentCount" resultType="int">
+		SELECT count(*)
+		FROM t_break_document t
+		<if test="breakTypeName!=null">
+			LEFT JOIN t_break_typelist t1 ON t1.break_id = t.id
+			LEFT JOIN t_break_type t2 ON t1.break_type_id = t2.id
+		</if>
+		<where>
+			<if test="shopId!=null"> 
+				and t.shop_id = #{shopId}
+			</if>
+			<if test="title!=null"> 
+				t.title like CONCAT('%',#{title},'%')
+			</if>
+			<if test="carModel!=null"> 
+				and t.car_model like CONCAT('%',#{carModel},'%')
+			</if>
+			<if test="carPart!=null"> 
+				and t.car_part like CONCAT('%',#{carPart},'%')
+			</if>
+			<if test="remark!=null"> 
+				and t.remark like CONCAT('%',#{remark},'%')
+			</if>
+			<if test="docStatus!=null"> 
+				and t.doc_status = #{docStatus}
+			</if>
+			<if test="breakTypeName!=null">
+				and t2.name like CONCAT('%',#{breakTypeName},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="getBreakDocumentById" resultType="com.home.ferrari.vo.breakdoc.BreakDocument">
+		SELECT
+		    id breakId,
+			title title,
+			doc_status docStatus,
+			car_model carModel,
+			car_part carPart,
+			remark remark,
+			text text,
+			create_time createTime,
+			modify_time modifyTime
+		FROM t_break_document
+		WHERE id = #{breakId}
+	</select>
+	
+	<select id="getBreakTraceList" resultType="com.home.ferrari.vo.breakdoc.BreakTrace">
+		select id id,
+			   break_id breakId,
+			   remark	remark,
+			   create_time createTime
+		from t_break_trace
+		<where>
+			<if test="breakId!=null">
+		       break_id = #{breakId}
+			</if>
+		</where>
+		order by create_time DESC	   
+	</select>
+	
+	<select id="getBreakTypeListByBreakId" resultType="int">
+		select break_type_id breakTypeId
+			from t_break_typelist
+		where break_id=#{breakId}	   
+	</select>
+	
+	<select id="getBreakTypeByParentId" resultType="com.home.ferrari.vo.breakdoc.BreakType">
+		select id id,
+			   parent_id parentId,
+			   name name,
+			   create_time createTime
+		from t_break_type
+		where parent_id=#{parentId}	   
+	</select>
+	
+	<select id="getBreakTypeLink" resultType="map">
+		SELECT
+			t1.id firstTypeId,
+			t1. NAME firstTypeName,
+			t2.id secondTypeId,
+			t2. NAME secondTypeName,
+			t3.id thirdTypeId,
+			t3. NAME thirdTypeName
+		FROM
+			t_break_type t1
+		JOIN t_break_type t2 ON t1.id = t2.parent_id
+		JOIN t_break_type t3 ON t2.id = t3.parent_id
+		AND t3.id = #{breakTypeId}	
+	</select>
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.capacity.CapacityHeaderDao">
+	<select id="getCapacityHeaderListByGroupId" resultType="com.home.ferrari.vo.capacity.CapacityHeader">
+		select id id,
+			   group_id groupId,
+			   header_id headerId,
+			   header_name headerName,
+			   input_type inputType,
+			   orders orders
+	    from t_capacity_header
+	    where group_id = #{groupId}
+	    order by orders ASC
+	</select>
+	
+	<insert id="insertCapacityHeader" parameterType="com.home.ferrari.vo.capacity.CapacityHeader" useGeneratedKeys="true" keyProperty="id">
+		insert into t_capacity_header(
+			group_id,
+			header_id,
+			header_name,
+			input_type,
+			orders,
+			create_time,
+			modify_time
+		) values (
+			#{groupId},
+			#{headerId},
+			#{headerName},
+			#{inputType},
+			#{orders},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<delete id="deleteCapacityHeaderByGroupId">
+		delete from t_capacity_header where group_id=#{groupId}
+	</delete>
+</mapper>

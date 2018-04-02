@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.file.FerrariFilesDao">
+
+	<insert id="insertFerrariFiles" parameterType="com.home.ferrari.vo.file.FerrariFiles" useGeneratedKeys="true" keyProperty="fileTypeId">
+		insert into t_ferrari_files(
+			parent_filetype_id,
+			is_file,
+			file_type,
+			file_suffix,
+			file_urls,
+			create_time,
+			modify_time
+		) values (
+			#{parentFiletypeId},
+			#{isFile},
+			#{fileType},
+			#{fileSuffix},
+			#{fileUrls},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getFerrariFiles" resultType="com.home.ferrari.vo.file.FerrariFiles">
+		SELECT
+		    file_type_id fileTypeId,
+		    parent_filetype_id parentFiletypeId,
+		    is_file isFile,
+			file_type fileType,
+			file_urls fileUrls,
+			file_suffix fileSuffix,
+			create_time createTime,
+			modify_time modifyTime
+		FROM t_ferrari_files
+		<where>
+			<if test="fileType!=null">
+				and file_type=#{fileType}
+			</if>
+		</where>
+	</select>
+	<select id="countFerrariFiles" resultType="int">
+		SELECT count(*)
+		FROM t_ferrari_files
+		<where>
+			<if test="fileType!=null">
+				and file_type=#{fileType}
+			</if>
+		</where>
+	</select>
+	
+	<delete id="deleteFerrariFileByFileTypeId">
+		delete from t_ferrari_files where file_type_id = #{fileTypeId}
+	</delete>
+</mapper>

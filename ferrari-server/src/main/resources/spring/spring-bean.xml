@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+			    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+	<!-- 上传接口 -->
+	<bean id="uploadService" class="com.home.ferrari.plugin.upload.UploadService">
+		<property name="fileSavePath" value="${home.ferrari.file.savepath}"/>
+		<property name="fileDomain" value="${home.ferrari.file.domain}"/>
+	</bean>
+	<!-- 一些常见的第三方引入变量值 -->
+	<bean id="propertiesValue" class="com.home.ferrari.global.PropertiesValue">
+		<property name="desKey" value="${home.ferrari.des.key}"/>
+		<property name="isExecuteMachine" value="${home.ferrari.job.isExecuteMachine}"/>
+		<property name="acceptTimeout" value="${home.ferrari.job.acceptTimeout}"/>
+		<property name="isProduct" value="${home.ferrari.isProduct}"/>
+		<property name="fileDomain" value="${home.ferrari.file.domain}"/>
+		<property name="fileCrmDomain" value="${home.crm.file.domain}"/>
+	</bean>
+</beans> 

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.capacity.ShopCapacityDao">
+	<select id="getShopCapacityList" resultType="com.home.ferrari.vo.capacity.ShopCapacity">
+		call getShopChildLst(#{capacityId},#{shopId})
+	</select>
+	<select id="getShopCapacityById" resultType="com.home.ferrari.vo.capacity.ShopCapacity">
+		select id id,
+			   shop_id shopId,	
+			   capacity_id capacityId,	
+			   parent_capacity_id parentCapacityId,
+			   name name,
+			   deep deep,
+			   node_count nodeCount,
+			   group_id groupId,
+			   is_leaf isLeaf
+		from t_shop_capacity 
+		where shop_id=#{shopId} and capacity_id=#{capacityId}	   
+	</select>
+	<insert id="insertShopCapacity" parameterType="com.home.ferrari.vo.capacity.ShopCapacity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_shop_capacity (
+		    shop_id,
+		    capacity_id,
+		    parent_capacity_id,
+		    name,
+		    deep,
+		    node_count,
+			group_id,
+			is_leaf,
+			create_time,
+			modify_time
+		) VALUES(
+		    #{shopId},
+		    #{capacityId},
+		    #{parentCapacityId},
+		    #{name},
+		    #{deep},
+		    #{nodeCount},
+			#{groupId},
+			#{isLeaf},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	<delete id="deleteShopCapacityByShopId">
+		delete from t_shop_capacity where shop_id=#{shopId}
+	</delete>
+</mapper>

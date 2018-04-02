@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.crmdao.sms.CrmSmsDao">
+	<insert id="insertSmsTotal" parameterType="com.home.ferrari.vo.sms.SmsTotal">
+		INSERT INTO t_sms_total (
+			id,
+		    total_num,
+		    sale_num,
+		    xa_total_num,
+		    xa_use_num,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			1,
+			#{totalNum},
+			#{saleNum},
+			#{xaTotalNum},
+			#{xaUseNum},
+			1,
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<update id="updateSmsTotal" parameterType="com.home.ferrari.vo.sms.SmsTotal">
+		UPDATE t_sms_total set modify_time = NOW()
+		<if test="totalNum!=null">
+			,total_num=#{totalNum}
+		</if>
+		<if test="saleNum!=null">
+			,sale_num=#{saleNum}
+		</if>
+		<if test="xaTotalNum!=null">
+			,xa_total_num=#{xaTotalNum}
+		</if>
+		<if test="xaUseNum!=null">
+			,xa_use_num=#{xaUseNum}
+		</if>
+		<if test="version!=null">
+			,version=#{version}
+		</if>
+		<![CDATA[
+			where id = 1 and version < #{version}
+		]]>	
+	</update>
+	
+	<select id="getSmsTotalById" resultType="com.home.ferrari.vo.sms.SmsTotal">
+		select id id,
+		    IFNULL(total_num,0) totalNum,
+		    IFNULL(sale_num,0) saleNum,
+		    IFNULL((total_num-sale_num),0) notSaleNum,
+		    IFNULL(xa_total_num,0) xaTotalNum,
+		    IFNULL(xa_use_num,0) xaUseNum,
+		    IFNULL((xa_total_num-xa_use_num),0) xaLeftNum,
+			version version,
+			create_time createTime,
+			modify_time modifyTime
+		from t_sms_total
+		where id = 1
+	</select>
+	
+	<insert id="insertSmsShopTotal" parameterType="com.home.ferrari.vo.sms.SmsShopTotal" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_sms_shoptotal (
+			admin_id,
+		    total_num,
+		    use_num,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{adminId},
+			#{totalNum},
+			#{useNum},
+			1,
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertSmsShopTotalRecord" parameterType="com.home.ferrari.vo.sms.SmsShopTotalRecord" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_sms_shoptotalrecord (
+			admin_id,
+		    total_num,
+			create_time
+		)
+		VALUES(
+			#{adminId},
+			#{totalNum},
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertSmsRecordBatch" parameterType="com.home.ferrari.vo.sms.SmsRecord">
+		INSERT INTO t_sms_record (
+			crm_user_id,
+			customer_id,
+			group_code,
+			group_seed,
+			sms_content,
+			admin_id,
+		    receive_mobile,
+		    sms_type,
+			create_time,
+			modify_time
+		)
+		VALUES
+	    <foreach collection="list" item="item" index="index" separator="," >  
+		(
+			#{item.crmUserId},
+			#{item.customerId},
+			#{item.groupCode},
+			#{item.groupSeed},
+			#{item.smsContent},
+			#{item.adminId},
+			#{item.receiveMobile},
+			#{item.smsType},
+			NOW(),
+			NOW()
+		)
+	    </foreach>  
+	</insert>
+
+	<update id="updateSmsShopTotal" parameterType="com.home.ferrari.vo.sms.SmsShopTotal">
+		UPDATE t_sms_shoptotal set modify_time = NOW()
+		<if test="totalNum!=null">
+			,total_num=#{totalNum}
+		</if>
+		<if test="useNum!=null">
+			,use_num=#{useNum}
+		</if>
+		<if test="version!=null">
+			,version=#{version}
+		</if>
+		<![CDATA[
+			where id = #{id} and version < #{version}
+		]]>	
+	</update>
+	
+	<select id="getSmsShopTotalByAdminId" resultType="com.home.ferrari.vo.sms.SmsShopTotal">
+		select id id,
+			admin_id adminId,
+		    IFNULL(total_num,0) totalNum,
+		    IFNULL(use_num,0) useNum,
+ 			IFNULL(total_num-use_num,0) leftNum,			
+ 			version version,
+			create_time createTime,
+			modify_time modifyTime
+		from t_sms_shoptotal
+		where admin_id = #{adminId}
+	</select>
+	
+	<select id="sumShopTotal" resultType="map">
+		SELECT
+			IFNULL(sum(t.use_num),0) useNumTotal,
+			IFNULL(sum(t.total_num),0) totalNum
+		FROM
+			t_sms_shoptotal t
+	</select>
+
+	<select id="sumYearShopTotal" resultType="long">
+		SELECT
+			sum(x.yearSumTotal) yearTotal
+		FROM
+			(
+				SELECT
+					t.group_code groupCode,
+					(IFNULL(count(t.id), 0) * group_seed) yearSumTotal
+				FROM
+					t_sms_record t
+				<where>
+				    sms_type=2
+					<if test="year!=null">
+						and year(t.create_time) = #{year}
+					</if>
+				</where> 
+				GROUP BY
+					t.group_code
+			) x
+	</select>
+	
+	<select id="sumMonthShopTotal" resultType="map">
+		SELECT
+			a.months month,
+			sum(a.groupSeed * a.useNumTotal) useNumTotal
+		FROM
+			(
+				SELECT
+					t.group_code groupCode,
+					date_format(t.create_time, '%m') months,
+					t.group_seed groupSeed,
+					(IFNULL(count(t.id), 0)) useNumTotal
+				FROM
+					t_sms_record t
+				WHERE
+					t.sms_type = 2
+					<if test="year!=null">
+						and year(t.create_time) = #{year}
+					</if>
+				GROUP BY
+					t.group_code
+			) a
+		GROUP BY
+			a.months
+	</select>
+	
+	<select id="getSaleOrderIncome" resultType="java.math.BigDecimal">
+		SELECT
+			IFNULL(sum(t.pay_money), 0) income
+		FROM
+			t_sms_saleorder t
+		<where>
+			t.pay_status=2
+			<if test="year!=null">
+				and year(t.create_time) = #{year}
+			</if>
+			<if test="month!=null">
+				and month(t.create_time) = #{month}
+			</if>
+			<if test="adminId!=null">
+				and t.admin_id = #{adminId}
+			</if>
+		</where> 
+	</select>
+
+	<select id="getMonthSaleOrderIncome" resultType="map">
+		SELECT
+			date_format(t.create_time, '%m') month,
+			IFNULL(sum(t.pay_money), 0) income
+		FROM
+			t_sms_saleorder t
+		<where>
+			t.pay_status=2
+			<if test="year!=null">
+				and year(t.create_time) = #{year}
+			</if>
+			<if test="adminId!=null">
+				and t.admin_id = #{adminId}
+			</if>
+		</where> 
+		GROUP BY
+			date_format(t.create_time, '%Y-%m')
+	</select>
+	
+	<select id="getSmsMealList" resultType="com.home.ferrari.vo.sms.SmsMeal">
+		SELECT
+			t.id id,
+			t.meal_name mealName,
+			t.sms_count smsCount,
+			t.sale_price salePrice,
+			t.sale_num saleNum,
+			t.upload_status uploadStatus,
+			t.remark remark,
+			t.version version,
+			t.create_time createTime,
+			t.modify_time modifyTime
+		FROM
+			t_sms_meal t
+		<where>
+			<if test="uploadStatus!=null">
+				t.upload_status=#{uploadStatus}
+			</if>
+		</where>	
+		ORDER BY
+			t.modify_time DESC
+	</select>
+
+	<select id="countSmsMealList" resultType="int">
+		SELECT count(*)
+		FROM
+			t_sms_meal t
+	</select>
+
+	<select id="getSmsMealById" resultType="com.home.ferrari.vo.sms.SmsMeal">
+		SELECT
+			t.id id,
+			t.meal_name mealName,
+			IFNULL(t.sms_count, 0) smsCount,
+			IFNULL(t.sale_price, 0) salePrice,
+			IFNULL(t.sale_num, 0) saleNum,
+			t.upload_status uploadStatus,
+			t.remark remark,
+			t.version version,
+			t.create_time createTime,
+			t.modify_time modifyTime
+		FROM
+			t_sms_meal t
+		WHERE id = #{id}	
+	</select>
+	
+	<insert id="insertSmsMeal" parameterType="com.home.ferrari.vo.sms.SmsMeal" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_sms_meal (
+			meal_name,
+		    sms_count,
+		    sale_price,
+		    sale_num,
+		    upload_status,
+		    remark,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{mealName},
+			#{smsCount},
+			#{salePrice},
+			#{saleNum},
+			#{uploadStatus},
+			#{remark},
+			1,
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<update id="updateSmsMeal" parameterType="com.home.ferrari.vo.sms.SmsMeal">
+		UPDATE t_sms_meal set modify_time = NOW()
+		<if test="mealName!=null">
+			,meal_name=#{mealName}
+		</if>
+		<if test="smsCount!=null">
+			,sms_count=#{smsCount}
+		</if>
+		<if test="salePrice!=null">
+			,sale_price=#{salePrice}
+		</if>
+		<if test="saleNum!=null">
+			,sale_num=#{saleNum}
+		</if>
+		<if test="uploadStatus!=null">
+			,upload_status=#{uploadStatus}
+		</if>
+		<if test="remark!=null">
+			,remark=#{remark}
+		</if>
+		<if test="version!=null">
+			,version=#{version}
+		</if>
+		<![CDATA[
+			where id = #{id} and version < #{version}
+		]]>	
+	</update>
+	
+	<select id="getMealSaleOrderList" resultType="com.home.ferrari.vo.sms.SmsSaleOrder">
+		SELECT
+			t2.id id,
+			t2.create_time createTime,
+			DATE_FORMAT(t2.create_time,'%Y-%m-%d') date,
+			t1.crm_shop_name crmShopName,
+			t1.user_name adminName,
+			t1.login_no loginNo,
+			t3.meal_name mealName,
+			t3.sms_count smsCount,
+			t2.buy_num buyNum,
+			t2.pay_money payMoney,
+			t2.is_invoice isInvoice
+		FROM
+			t_crm_user t1
+		JOIN t_sms_saleorder t2 ON t1.id = t2.admin_id
+		JOIN t_sms_meal t3 ON t2.meal_id = t3.id
+		<where>
+				t2.pay_status=2
+			<if test="buyYear!=null">
+				and year(t2.create_time) = #{buyYear}
+			</if>
+			<if test="buyMonth!=null">
+				and month(t2.create_time) = #{buyMonth}
+			</if>
+			<if test="adminId!=null">
+				and t2.admin_id = #{adminId}
+			</if>
+			<if test="mealId!=null">
+				and t3.id = #{mealId}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+			<if test="mealName!=null">
+				and t3.meal_name like CONCAT('%',#{mealName},'%')
+			</if>
+		</where>		
+	</select>
+	<select id="countMealSaleOrderList" resultType="int">
+		SELECT count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_sms_saleorder t2 ON t1.id = t2.admin_id
+		JOIN t_sms_meal t3 ON t2.meal_id = t3.id
+		<where>
+				t2.pay_status=2
+			<if test="buyYear!=null">
+				and year(t2.create_time) = #{buyYear}
+			</if>
+			<if test="buyMonth!=null">
+				and month(t2.create_time) = #{buyMonth}
+			</if>
+			<if test="adminId!=null">
+				and t2.admin_id = #{adminId}
+			</if>
+			<if test="mealId!=null">
+				and t3.id = #{mealId}
+			</if>
+			<if test="crmShopName!=null">
+				and t1.crm_shop_name like CONCAT('%',#{crmShopName},'%')
+			</if>
+			<if test="mealName!=null">
+				and t3.meal_name like CONCAT('%',#{mealName},'%')
+			</if>
+		</where>		
+	</select>
+	
+	<select id="getShopTotalList" resultType="com.home.ferrari.vo.sms.SmsShopTotal">
+		SELECT
+			t2.id id,
+			t2.admin_id adminId,
+			t1.crm_shop_name crmShopName,
+			t1.user_name adminName,
+			t1.login_no loginNo,
+			IFNULL(t2.use_num, 0) useNum,
+			IFNULL(
+				(t2.total_num - t2.use_num),
+				0
+			) leftNum
+		FROM
+			t_crm_user t1
+		JOIN t_sms_shoptotal t2 ON t1.id = t2.admin_id
+		WHERE
+			t1.is_active = 1
+			<if test="keyword != null">
+				and (
+					t1.crm_shop_name like CONCAT('%',#{keyword},'%')
+					OR
+					t1.user_name like CONCAT('%',#{keyword},'%')
+					OR
+					t1.login_no like CONCAT('%',#{keyword},'%')
+				)
+			</if>	
+	</select>
+	<select id="countShopTotalList" resultType="int">
+		SELECT count(*)
+		FROM
+			t_crm_user t1
+		JOIN t_sms_shoptotal t2 ON t1.id = t2.admin_id
+		WHERE
+			t1.is_active = 1
+			<if test="keyword != null">
+				and (
+					t1.crm_shop_name like CONCAT('%',#{keyword},'%')
+					OR
+					t1.user_name like CONCAT('%',#{keyword},'%')
+					OR
+					t1.login_no like CONCAT('%',#{keyword},'%')
+				)
+			</if>	
+	</select>
+	
+	<insert id="insertSmsSaleOrder" parameterType="com.home.ferrari.vo.sms.SmsSaleOrder" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_sms_saleorder (
+			meal_id,
+		    admin_id,
+		    buy_num,
+		    pay_money,
+		    is_invoice,
+		    alipay,
+		    alipay_serial,
+		    pay_status,
+			version,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{mealId},
+			#{adminId},
+			#{buyNum},
+			#{payMoney},
+			#{isInvoice},
+			#{alipay},
+			#{alipaySerial},
+			#{payStatus},
+			1,
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<update id="updateSmsSaleOrder" parameterType="com.home.ferrari.vo.sms.SmsSaleOrder">
+		UPDATE t_sms_saleorder set modify_time = NOW()
+		<if test="isInvoice!=null">
+			,is_invoice=#{isInvoice}
+		</if>
+		<if test="payStatus!=null">
+			,pay_status=#{payStatus}
+		</if>
+		<![CDATA[
+			where id = #{id}
+		]]>	
+	</update>
+	
+	<select id="getSmsSaleOrderById" resultType="com.home.ferrari.vo.sms.SmsSaleOrder">
+		select id id,
+			   meal_id mealId,
+			   admin_id adminId,
+			   buy_num buyNum,
+			   pay_money payMoney,
+			   is_invoice isInvoice,
+			   pay_status payStatus,
+			   alipay alipay,
+			   alipay_serial alipaySerial,
+			   version version,
+			   create_time createTime,
+			   modify_time modifyTime
+		from t_sms_saleorder
+		where id = #{id}	   
+	</select>
+	
+	<select id="getShopSmsSendDetail" resultType="com.home.ferrari.vo.sms.SmsShopSendDetail">
+		SELECT
+			t.crm_shop_name crmShopName,
+			t.crm_shop_company crmShopCompany,
+			t.user_name adminName,
+			t.mobile mobile,
+			t1.use_num useNum,
+			(t1.total_num - t1.use_num) leftNum,
+			t1.total_num totalNum
+		FROM
+			t_crm_user t
+		JOIN t_sms_shoptotal t1 ON t.id = t1.admin_id
+		WHERE
+			t.is_active = 1
+		AND t.id = #{adminId}
+	</select>
+	
+	<select id="getShopSmsSendRecord" resultType="com.home.ferrari.vo.sms.SmsSendRecord">
+		SELECT
+			t2.group_code groupCode,
+			t2.create_time createTime,
+			date_format(t2.create_time, '%Y-%m-%d') date,
+			'短信' type,
+			count(*) targetPhoneNum,
+			t2.sms_content sendContent,
+			IFNULL(t2.sms_type, 0) smsType,
+			t2.crm_user_id crmUserId,
+			t2.admin_id adminId,
+			(count(*) * t2.group_seed) markNum
+		FROM
+			t_sms_record t2 
+		<where>
+			<if test="adminId!=null">
+				t2.admin_id = #{adminId}
+			</if>
+			<if test="senderId!=null">
+				and t2.crm_user_id = #{senderId}
+			</if>
+			<if test="smsType!=null">
+				and t2.sms_type = #{smsType}
+			</if>
+		</where>	
+		GROUP BY
+			t2.group_code
+	</select>
+
+	<select id="countShopSmsSendRecord" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM (
+			SELECT
+				t2.group_code groupCode,
+				t2.create_time createTime,
+				date_format(t2.create_time, '%Y-%m-%d') date,
+				'短信' type,
+				count(*) targetPhoneNum,
+				t2.sms_content sendContent,
+				t2.sms_type smsType,
+				t2.crm_user_id crmUserId,
+				t2.admin_id adminId,
+				count(*) markNum
+			FROM
+				t_sms_record t2 
+			<where>
+				<if test="adminId!=null">
+					t2.admin_id = #{adminId}
+				</if>
+				<if test="senderId!=null">
+					and t2.crm_user_id = #{senderId}
+				</if>
+				<if test="smsType!=null">
+					and t2.sms_type = #{smsType}
+				</if>
+			</where>	
+			GROUP BY
+				t2.group_code
+		) t
+	</select>
+	
+	<select id="getGroupSmsSendDetail" resultType="com.home.ferrari.vo.sms.SmsSendRecordDetail">
+		SELECT
+		    t2.group_code groupCode,
+			t2.sms_content sendContent,
+			date_format(t2.create_time, '%Y-%m-%d') sendDate,
+			t2.create_time createTime,
+			t2.sms_type smsType,
+			t2.crm_user_id crmUserId,
+			t2.admin_id adminId,
+			count(*) sendNum,
+			(count(*) * t2.group_seed) markNum
+		FROM t_sms_record t2
+		WHERE t2.group_code = #{groupCode}
+		GROUP BY t2.group_code
+	</select>
+	
+	<select id="getGroupSmsSendTarget" resultType="map">
+		SELECT
+			t1.receive_mobile targetMobile,
+			t2.customer_name customerName
+		FROM
+			t_sms_record t1
+		LEFT JOIN t_crm_customer t2 ON t1.customer_id = t2.id
+		where t1.group_code = #{groupCode}
+	</select>	
+	<select id="countGroupSmsSendTarget" resultType="int">
+		SELECT count(*)
+		FROM
+			t_sms_record t1
+		LEFT JOIN t_crm_customer t2 ON t1.customer_id = t2.id
+		where t1.group_code = #{groupCode}
+	</select>	
+</mapper>

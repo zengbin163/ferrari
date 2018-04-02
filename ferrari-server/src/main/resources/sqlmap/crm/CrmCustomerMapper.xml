@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.crmdao.crm.CrmCustomerDao">
+ 
+	<insert id="insertCrmCustomer" parameterType="com.home.ferrari.vo.crm.CrmCustomer" useGeneratedKeys="true" keyProperty="id">
+		INSERT IGNORE INTO t_crm_customer (
+		    crm_batch_code,
+			customer_name,
+			level,
+			license_time,
+			license_plate,
+			link_phone,
+			crm_user_id,
+			crm_user_name,
+			crm_operator_id,
+			crm_brand_name,
+			car_series,
+			displacement,
+			year,
+			vin,
+			engine,
+			purpose,
+			remark,
+			introducer,
+			link_time,
+			upload_status,
+			upload_reason,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{crmBatchCode},
+			#{customerName},
+			#{level},
+			#{licenseTime},
+			#{licensePlate},
+			#{linkPhone},
+			#{crmUserId},
+			#{crmUserName},
+			#{crmOperatorId},
+			#{crmBrandName},
+			#{carSeries},
+			#{displacement},
+			#{year},
+			#{vin},
+			#{engine},
+			#{purpose},
+			#{remark},
+			#{introducer},
+			#{linkTime},
+			#{uploadStatus},
+			#{uploadReason},
+			#{createTime},
+			NOW()
+		)
+	</insert>
+	
+	<update id="updateCrmCustomer" parameterType="com.home.ferrari.vo.crm.CrmCustomer">
+		UPDATE t_crm_customer set modify_time = NOW()
+				<if test="crmBatchCode != null">
+					,crm_batch_code = #{crmBatchCode}
+				</if>
+				<if test="customerName != null">
+					,customer_name = #{customerName}
+				</if>
+				<if test="level != null">
+					,level = #{level}
+				</if>
+				<if test="licenseTime != null">
+					,license_time = #{licenseTime}
+				</if>
+				<if test="licensePlate != null">
+					,license_plate = #{licensePlate}
+				</if>
+				<if test="linkPhone != null">
+					,link_phone = #{linkPhone}
+				</if>
+				<if test="crmUserId != null">
+					,crm_user_id = #{crmUserId}
+				</if>
+				<if test="crmUserName != null">
+					,crm_user_name = #{crmUserName}
+				</if>
+				<if test="crmBrandName != null">
+					,crm_brand_name = #{crmBrandName}
+				</if>
+				<if test="carSeries != null">
+					,car_series = #{carSeries}
+				</if>
+				<if test="displacement != null">
+					,displacement = #{displacement}
+				</if>
+				<if test="year != null">
+					,year = #{year}
+				</if>
+				<if test="vin != null">
+					,vin = #{vin}
+				</if>
+				<if test="engine != null">
+					,engine = #{engine}
+				</if>
+				<if test="purpose != null">
+					,purpose = #{purpose}
+				</if>
+				<if test="remark != null">
+					,remark = #{remark}
+				</if>
+				<if test="introducer != null">
+					,introducer = #{introducer}
+				</if>
+				<if test="linkTime != null">
+					,link_time = #{linkTime}
+				</if>
+				<if test="uploadStatus != null">
+					,upload_status = #{uploadStatus}
+				</if>
+				<if test="uploadReason != null">
+					,upload_reason = #{uploadReason}
+				</if>
+		where id = #{id}	
+	</update>
+	
+	<update id="distributeCustomerByBatchCode" parameterType="string">
+		update t_crm_customer 
+			set modify_time = NOW(),
+				upload_status = 2
+		where crm_batch_code = #{crmBatchCode} and upload_status = 1
+	</update>
+	
+	<insert id="insertCrmCustTrace" parameterType="com.home.ferrari.vo.crm.CrmCustTrace" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_cust_trace (
+		    crm_user_id,
+		    crm_customer_id,
+			remark,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{crmUserId},
+			#{crmCustomerId},
+			#{remark},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getCrmCustTrace" resultType="com.home.ferrari.vo.crm.CrmCustTrace">
+		SELECT crm_user_id crmUserId,
+		    crm_customer_id crmCustomerId,
+			remark remark,
+			create_time createTime,
+			modify_time modifyTime
+		FROM t_crm_cust_trace
+		WHERE crm_customer_id = #{customerId}	
+		ORDER BY create_time ASC
+	</select>
+	
+	<insert id="insertCrmCustRemaind" parameterType="com.home.ferrari.vo.crm.CrmCustRemaind" useGeneratedKeys="true" keyProperty="id">
+		INSERT IGNORE INTO t_crm_cust_remaind (
+		    crm_user_id,
+		    crm_customer_id,
+		    is_remind,
+			remind_time,
+			create_time,
+			modify_time
+		)
+		VALUES(
+			#{crmUserId},
+			#{crmCustomerId},
+			#{isRemind},
+			#{remindTime},
+			NOW(),
+			NOW()
+		)   ON DUPLICATE KEY UPDATE 
+				<if test="remindTime != null">
+					remind_time = #{remindTime},
+				</if>
+				modify_time = NOW()
+	</insert>
+	
+	<delete id="deleteCrmCustRemaind">
+		delete from t_crm_cust_remaind where crm_customer_id = #{crmCustomerId}
+	</delete>
+	
+	<select id="getRemaindByCustomerId" resultType="java.util.Date">
+		select remind_time remindTime
+		 	from t_crm_cust_remaind 
+		where is_remind=1 and crm_customer_id=#{customerId}
+		order by modify_time DESC
+		limit 1
+	</select>
+	
+	<select id="getMaxCrmBatchSeed" resultType="int">
+		select IFNULL(max(seed),1) from t_crm_batch where year=#{year} and month = #{month}
+	</select>
+
+	<select id="getCrmBatchByBatchCode" resultType="com.home.ferrari.vo.crm.CrmBatch">
+		select batch_code batchCode,
+		    year year,
+		    month month,
+			seed seed,
+			create_time createTime
+		from t_crm_batch 
+		where batch_code=#{batchCode}
+	</select>
+
+	<select id="getCrmBatchCodeByYearAndMonth" resultType="string">
+		select batch_code from t_crm_batch where year=#{year} and month = #{month}
+	</select>
+	
+	<insert id="insertCrmBatch" parameterType="com.home.ferrari.vo.crm.CrmBatch" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_batch (
+		    batch_code,
+		    year,
+		    month,
+			seed,
+			create_time
+		)
+		VALUES(
+			#{batchCode},
+			#{year},
+			#{month},
+			#{seed},
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertCrmCustBizType" parameterType="com.home.ferrari.vo.crm.CrmCustBizType" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_cust_biztype (
+		    crm_customer_id,
+		    biz_type,
+			create_time
+		)
+		VALUES(
+			#{crmCustomerId},
+			#{bizType},
+			NOW()
+		)
+	</insert>
+
+	<insert id="insertCrmCustPurpose" parameterType="com.home.ferrari.vo.crm.CrmCustPurpose" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_crm_cust_purpose (
+		    customer_id,
+		    purpose,
+			create_time
+		)
+		VALUES(
+			#{customerId},
+			#{purpose},
+			NOW()
+		)
+	</insert>
+	
+	<delete id="deleteCrmCustBizType" parameterType="int">
+		delete from t_crm_cust_biztype 
+			where crm_customer_id = #{customerId}
+	</delete>
+	
+	<select id="getCrmCustBizType" resultType="com.home.ferrari.vo.crm.CrmCustBizType">
+		SELECT crm_customer_id crmCustomerId,
+			biz_type bizType,
+			create_time createTime
+		FROM t_crm_cust_biztype
+		WHERE crm_customer_id = #{customerId}	
+	</select>
+	
+	<sql id="getCrmCustomerSql">
+		select id id, 
+		    crm_batch_code crmBatchCode,
+			customer_name customerName,
+			level level,
+			license_time licenseTime,
+			license_plate licensePlate,
+			link_phone linkPhone,
+			crm_user_id crmUserId,
+			crm_user_name crmUserName,
+			crm_brand_name crmBrandName,
+			car_series carSeries,
+			displacement displacement,
+			year year,
+			vin vin,
+			engine engine,
+			purpose purpose,
+			remark remark,
+			introducer introducer,
+			link_time linkTime,
+			upload_status uploadStatus,
+			upload_reason uploadReason,
+			create_time createTime,
+			modify_time modifyTime
+	     from t_crm_customer		
+	</sql>
+	<select id="getCrmCustomerById" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		<include refid="getCrmCustomerSql" />
+		where id = #{customerId}
+	</select>
+	<select id="getCrmCustomerByLicensePlate" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		<include refid="getCrmCustomerSql" />
+		where license_plate = #{licensePlate}
+		and upload_status != 0 
+		<if test="adminId!=null">
+			and crm_operator_id = #{adminId}
+		</if>
+		<if test="customerId!=null">
+			and id!=#{customerId}
+		</if>
+		limit 1
+	</select>
+	<select id="getUploadFailCrmCustomer" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		<include refid="getCrmCustomerSql" />
+		where upload_status = 0 
+			and crm_batch_code = #{crmBatchCode}
+			<if test="crmUserIdList!=null">
+				 and crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+	</select>
+	
+	<select id="getCrmCustomerList" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		SELECT DISTINCT
+		    t1.id id,
+			t1.crm_batch_code crmBatchCode,
+			t1.customer_name customerName,
+			t1. LEVEL LEVEL,
+			t1.license_time licenseTime,
+			t1.license_plate licensePlate,
+			t1.link_phone linkPhone,
+			t1.crm_user_id crmUserId,
+			t1.crm_user_name crmUserName,
+			t1.crm_brand_name crmBrandName,
+			t1.car_series carSeries,
+			t1.displacement displacement,
+			t1. YEAR YEAR,
+			t1.vin vin,
+			t1. ENGINE ENGINE,
+			t1.purpose purpose,
+			t1.remark remark,
+			t1.introducer introducer,
+			t1.link_time linkTime,
+			t1.upload_status uploadStatus,
+			t1.upload_reason uploadReason,
+			t1.create_time createTime,
+			t1.modify_time modifyTime
+		FROM
+			t_crm_customer t1
+		LEFT JOIN t_crm_batch t2 ON t1.crm_batch_code = t2.batch_code
+		JOIN t_crm_user t3 ON t1.crm_user_id = t3.id
+		JOIN t_crm_cust_biztype t4 ON t1.id = t4.crm_customer_id
+		<where>
+			t1.upload_status != 0
+			<if test="uploadStatus!=null"> 
+				and t1.upload_status = #{uploadStatus}
+			</if>
+			<if test="batchCode!=null"> 
+				and t1.crm_batch_code = #{batchCode}
+			</if>
+			<if test="year!=null"> 
+				and t2.year = #{year}
+			</if>
+			<if test="month!=null"> 
+				and t2.month = #{month}
+			</if>
+			<if test="seed!=null"> 
+				and t2.seed = #{seed}
+			</if>
+			<if test="crmUserIdList!=null">
+				 and t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="level!=null"> 
+				and t1.level = #{level}
+			</if>
+			<if test="purpose!=null"> 
+				and t1.purpose = #{purpose}
+			</if>
+			<if test="bizType!=null"> 
+				and t4.biz_type = #{bizType}
+			</if>
+			<if test="userName!=null"> 
+				and t3.user_name = #{userName}
+			</if>
+			<if test="keyword!=null"> 
+				and (
+					t1.license_plate like CONCAT('%',#{keyword},'%')
+					or
+					t1.link_phone like CONCAT('%',#{keyword},'%')
+					or
+					t1.customer_name like CONCAT('%',#{keyword},'%')
+					)
+			</if>
+		</where>
+	</select>
+	<select id="countCrmCustomerList" resultType="int">
+		SELECT count(DISTINCT t1.id)
+		FROM
+			t_crm_customer t1
+		LEFT JOIN t_crm_batch t2 ON t1.crm_batch_code = t2.batch_code
+		JOIN t_crm_user t3 ON t1.crm_user_id = t3.id
+		JOIN t_crm_cust_biztype t4 ON t1.id = t4.crm_customer_id
+		<where>
+			t1.upload_status != 0
+			<if test="uploadStatus!=null"> 
+				and t1.upload_status = #{uploadStatus}
+			</if>
+			<if test="batchCode!=null"> 
+				and t1.crm_batch_code = #{batchCode}
+			</if>
+			<if test="year!=null"> 
+				and t2.year = #{year}
+			</if>
+			<if test="month!=null"> 
+				and t2.month = #{month}
+			</if>
+			<if test="seed!=null"> 
+				and t2.seed = #{seed}
+			</if>
+			<if test="crmUserIdList!=null">
+				 and t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+			<if test="level!=null"> 
+				and t1.level = #{level}
+			</if>
+			<if test="purpose!=null"> 
+				and t1.purpose = #{purpose}
+			</if>
+			<if test="bizType!=null"> 
+				and t4.biz_type = #{bizType}
+			</if>
+			<if test="userName!=null"> 
+				and t3.user_name = #{userName}
+			</if>
+			<if test="keyword!=null"> 
+				and (
+					t1.license_plate like CONCAT('%',#{keyword},'%')
+					or
+					t1.link_phone like CONCAT('%',#{keyword},'%')
+					or
+					t1.customer_name like CONCAT('%',#{keyword},'%')
+					)
+			</if>
+		</where>
+	</select>
+	
+	<select id="sumNotDistributeCust" resultType="int">
+		SELECT count(*) 
+		FROM 
+			t_crm_customer t 
+		WHERE 
+			t.upload_status=1
+			<if test="crmUserIdList!=null">
+				 and t.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+	</select>
+	<select id="sumNotFollowCust" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_customer t1
+		WHERE
+			t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 and t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>
+		AND NOT EXISTS (
+			SELECT
+				*
+			FROM
+				t_crm_cust_trace t2
+			WHERE
+				t1.id = t2.crm_customer_id
+		)
+	</select>
+	<select id="sumTreeDayFollowCustList" resultType="com.home.ferrari.vo.crm.CrmCustCount">
+		SELECT
+			t3.id,
+			t3.user_name,
+			count(*)
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		JOIN t_crm_user t3 ON t1.crm_user_id = t3.id
+		WHERE
+		    t1.upload_status != 0
+		    and t3.is_active = 1
+		<if test="crmUserIdList!=null">
+			 and t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>
+		<![CDATA[
+			AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 259200000
+			AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+		]]>	
+		GROUP BY
+			t3.id,
+			t3.user_name
+	</select>
+	<select id="sumTreeDayFollowCust" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		WHERE
+		    t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 and t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>
+		<![CDATA[
+			AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 259200000
+			AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+		]]>	
+	</select>
+	<select id="sumTodayFollowCust" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		WHERE
+		    t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 AND t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>
+		<![CDATA[
+			AND (t2.remind_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') and concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+		]]>	
+	</select>
+	<select id="sumTodayNewCust" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_customer t1
+		WHERE
+		    t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 AND t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>
+		<![CDATA[
+			AND (t1.create_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') and concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+		]]>	
+	</select>
+	
+	<select id="getCustomerListByClickType" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		SELECT 
+		    t1.id id,
+			t1.crm_batch_code crmBatchCode,
+			t1.customer_name customerName,
+			t1. LEVEL LEVEL,
+			t1.license_time licenseTime,
+			t1.license_plate licensePlate,
+			t1.link_phone linkPhone,
+			t1.crm_user_id crmUserId,
+			t1.crm_user_name crmUserName,
+			t1.crm_brand_name crmBrandName,
+			t1.car_series carSeries,
+			t1.displacement displacement,
+			t1. YEAR YEAR,
+			t1.vin vin,
+			t1. ENGINE ENGINE,
+			t1.purpose purpose,
+			t1.remark remark,
+			t1.introducer introducer,
+			t1.link_time linkTime,
+			t1.upload_status uploadStatus,
+			t1.upload_reason uploadReason,
+			t1.create_time createTime,
+			t1.modify_time modifyTime
+		FROM t_crm_customer t1
+		<if test="clickType == 3">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 4">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 6">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 7">
+			JOIN t_crm_cust_purpose t2 ON t1.id = t2.customer_id
+		</if>
+		<where>
+			<if test="clickType == 1">
+				t1.upload_status=1			
+			</if>
+			<if test="clickType == 2">
+				AND t1.upload_status != 0
+				AND NOT EXISTS (
+					SELECT
+						*
+					FROM
+						t_crm_cust_trace t2
+					WHERE
+						t1.id = t2.crm_customer_id
+				)
+			</if>
+			<if test="clickType == 3">
+				AND t1.upload_status != 0
+				<![CDATA[
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 259200000
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+				]]>	
+			</if>			
+			<if test="clickType == 4">
+				AND t1.upload_status != 0
+				<![CDATA[
+					AND (t2.remind_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') 
+							AND concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+				]]>	
+			</if>		
+			<if test="clickType == 5">
+			    AND t1.upload_status != 0
+				<![CDATA[
+					AND (t1.create_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') and concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+				]]>	
+			</if>		
+			<if test="clickType == 6">
+			    AND t1.upload_status != 0
+				<![CDATA[
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 86400000
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+				]]>	
+			</if>
+			<if test="clickType == 7">
+				AND t1.upload_status != 0
+			  	AND t2.purpose = 'F'
+			</if>		
+			<if test="clickType == 8">
+				AND t1.upload_status != 0
+			  	AND t1.purpose = 'D'
+			</if>		
+			<if test="clickType == 9">
+				AND t1.upload_status != 0
+				AND EXISTS (
+					SELECT
+						*
+					FROM
+						t_crm_cust_trace t2
+					WHERE
+						t1.id = t2.crm_customer_id
+				)
+			</if>		
+			<if test="crmUserIdList!=null">
+				 AND t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+		</where> 
+	</select>
+	<select id="countCustomerListByClickType" resultType="int">
+		SELECT count(t1.id)	
+		FROM t_crm_customer t1
+		<if test="clickType == 3">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 4">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 6">
+			JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		</if>
+		<if test="clickType == 7">
+			JOIN t_crm_cust_purpose t2 ON t1.id = t2.customer_id
+		</if>
+		<where>
+			<if test="clickType == 1">
+				t1.upload_status=1			
+			</if>
+			<if test="clickType == 2">
+				AND t1.upload_status != 0
+				AND NOT EXISTS (
+					SELECT
+						*
+					FROM
+						t_crm_cust_trace t2
+					WHERE
+						t1.id = t2.crm_customer_id
+				)
+			</if>
+			<if test="clickType == 3">
+				AND t1.upload_status != 0
+				<![CDATA[
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 259200000
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+				]]>	
+			</if>			
+			<if test="clickType == 4">
+				AND t1.upload_status != 0
+				<![CDATA[
+					AND (t2.remind_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') 
+							AND concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+				]]>	
+			</if>		
+			<if test="clickType == 5">
+			    AND t1.upload_status != 0
+				<![CDATA[
+					AND (t1.create_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') and concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+				]]>	
+			</if>		
+			<if test="clickType == 6">
+			    AND t1.upload_status != 0
+				<![CDATA[
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 <= 86400000
+					AND UNIX_TIMESTAMP(t2.remind_time) * 1000 - UNIX_TIMESTAMP() * 1000 >= 0
+				]]>	
+			</if>
+			<if test="clickType == 7">
+				AND t1.upload_status != 0
+			  	AND t2.purpose = 'F'
+			</if>		
+			<if test="clickType == 8">
+				AND t1.upload_status != 0
+			  	AND t1.purpose = 'D'
+			</if>		
+			<if test="clickType == 9">
+				AND t1.upload_status != 0
+				AND EXISTS (
+					SELECT
+						*
+					FROM
+						t_crm_cust_trace t2
+					WHERE
+						t1.id = t2.crm_customer_id
+				)
+			</if>		
+			<if test="crmUserIdList!=null">
+				 AND t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+		</where> 
+	</select>
+	
+	<select id="getCrmCustomerListByCustIds" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		SELECT t1.id id,
+			t1.crm_batch_code crmBatchCode,
+			t1.customer_name customerName,
+			t1.LEVEL LEVEL,
+			t1.license_time licenseTime,
+			t1.license_plate licensePlate,
+			t1.link_phone linkPhone,
+			t1.crm_user_id crmUserId,
+			t1.crm_user_name crmUserName,
+			t1.crm_brand_name crmBrandName,
+			t1.car_series carSeries,
+			t1.displacement displacement,
+			t1.YEAR YEAR,
+			t1.vin vin,
+			t1.ENGINE ENGINE,
+			t1.purpose purpose,
+			t1.remark remark,
+			t1.introducer introducer,
+			t1.link_time linkTime,
+			t1.upload_status uploadStatus,
+			t1.upload_reason uploadReason,
+			t1.create_time createTime,
+			t1.modify_time modifyTime
+		FROM
+			t_crm_customer t1
+		<where>
+			t1.upload_status != 0
+			<if test="custIds!=null">
+				 and t1.id in
+				 <foreach item="item" index="index" collection="custIds" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+		</where>
+	</select>		
+	<select id="getCrmCustomerListByMobiles" resultType="com.home.ferrari.vo.crm.CrmCustomer">
+		SELECT t1.id id,
+			t1.crm_batch_code crmBatchCode,
+			t1.customer_name customerName,
+			t1.LEVEL LEVEL,
+			t1.license_time licenseTime,
+			t1.license_plate licensePlate,
+			t1.link_phone linkPhone,
+			t1.crm_user_id crmUserId,
+			t1.crm_user_name crmUserName,
+			t1.crm_brand_name crmBrandName,
+			t1.car_series carSeries,
+			t1.displacement displacement,
+			t1.YEAR YEAR,
+			t1.vin vin,
+			t1.ENGINE ENGINE,
+			t1.purpose purpose,
+			t1.remark remark,
+			t1.introducer introducer,
+			t1.link_time linkTime,
+			t1.upload_status uploadStatus,
+			t1.upload_reason uploadReason,
+			t1.create_time createTime,
+			t1.modify_time modifyTime
+		FROM
+			t_crm_customer t1
+		<where>
+			t1.upload_status != 0
+			<if test="mobiles!=null">
+				 and t1.link_phone in
+				 <foreach item="item" index="index" collection="mobiles" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>
+		</where>
+	</select>		
+</mapper>

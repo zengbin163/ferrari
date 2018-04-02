@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.quest.ShopInvestigateDao">
+
+	<insert id="insertShopInvestigate" parameterType="com.home.ferrari.vo.quest.ShopInvestigate" useGeneratedKeys="true" keyProperty="id">
+		insert into t_shop_investigate(
+			shop_id,
+			investigate_id,
+			operator_id,
+			msg_type,
+			sub_msg_type,
+			is_read,
+			is_agree,
+			shop_price,
+			reply_title,
+			reply_text,
+			title,
+			text,
+			create_time
+		) values (
+			#{shopId},
+			#{investigateId},
+			#{operatorId},
+			#{msgType},
+			#{subMsgType},
+			#{isRead},
+			#{isAgree},
+			#{shopPrice},
+			#{replyTitle},
+			#{replyText},
+			#{title},
+			#{text},
+			NOW()
+		)
+	</insert>
+	
+	<update id="updateShopInvestigate" parameterType="com.home.ferrari.vo.quest.ShopInvestigate">
+		update t_shop_investigate 
+		set reply_time = now(),
+			reply_title=#{replyTitle},
+			reply_text=#{replyText},
+			is_agree=#{isAgree},
+			operator_id=#{operatorId},
+			shop_price=#{shopPrice},
+			is_read=1
+		where id = #{id}
+	</update>
+
+	<update id="updateShopInvestigateIsRead" parameterType="int">
+		update t_shop_investigate 
+		set is_read = 1
+		where id = #{id}
+	</update>
+	
+	<select id="getShopInvestigateByShopIdAndInvestigateId" resultType="com.home.ferrari.vo.quest.ShopInvestigate">
+		select shop_id shopId,
+			investigate_id investigateId,
+			operator_id operatorId,
+			is_agree isAgree,
+			IFNULL(shop_price,0) shopPrice,
+			reply_title replyTitle,
+			reply_text replyText,
+			reply_time replyTime,
+			msg_type msgType,
+			create_time createTime
+		from t_shop_investigate
+		where shop_id = #{shopId} 
+			and investigate_id = #{investigateId} 
+			and sub_msg_type = #{subMsgType}
+		order by create_time DESC limit 1
+	</select>
+
+	<select id="getShopInvestigateListByInvestigateId" resultType="com.home.ferrari.vo.quest.ShopInvestigate">
+		select shop_id shopId,
+			investigate_id investigateId,
+			operator_id operatorId,
+			is_agree isAgree,
+			IFNULL(shop_price,0) shopPrice,
+			reply_title replyTitle,
+			reply_text replyText,
+			reply_time replyTime,
+			msg_type msgType,
+			create_time createTime
+		from t_shop_investigate
+		where investigate_id = #{investigateId}
+	</select>
+	
+	<select id="getAgreeListByInvestigateId" resultType="map">
+		select 
+			is_agree isAgree,
+			count(*) count
+		from t_shop_investigate 
+		where investigate_id = #{investigateId}
+		<if test="shopId!=null">
+			and shop_id = #{shopId}
+		</if>
+		group by is_agree	
+	</select>
+	<select id="getReadListByInvestigateId" resultType="map">
+		select 
+			is_read isRead,
+			count(*) count
+		from t_shop_investigate 
+		where investigate_id = #{investigateId}
+		<if test="shopId!=null">
+			and shop_id = #{shopId}
+		</if>
+		group by is_read	
+	</select>
+	
+	<select id="getShopInvestigateListByInvestigateIdAndReply" resultType="com.home.ferrari.vo.quest.ShopInvestigate">
+		SELECT
+		  t1.id id,
+		  t1.id shopInvestigateId,
+		  t2.id shopId,
+		  CASE
+			WHEN t1.sub_msg_type = 2 THEN
+				t22.mobile
+			ELSE
+				t2.shop_name
+			END shopName,
+		  CASE
+			WHEN t1.sub_msg_type = 2 THEN
+				t24.role_name
+			ELSE
+				t2.shop_address
+			END shopAddress,
+		  t1.reply_time replyTime,
+		  CASE
+			WHEN t1.sub_msg_type = 2 THEN
+				t3.nick_name
+			ELSE
+				t4.nick_name
+			END replyName,
+		  t1.shop_price shopPrice,
+		  t1.sub_msg_type subMsgType,
+		  t1.msg_type msgType,
+		  t1.is_read isRead,
+		  t1.is_agree isAgree,
+		  t1.reply_title replyTitle,
+		  t1.reply_text replyText,
+		  CASE
+			WHEN t1.is_agree IS NULL THEN 0 ELSE 1
+		  	END isReply
+		FROM t_shop_investigate t1
+		LEFT JOIN t_tesla_shop t2 ON t1.shop_id = t2.id
+		LEFT JOIN t_ferrari_user t22 ON t1.shop_id = t22.id
+		LEFT JOIN t_ferrari_user_role t23 on t22.id = t23.user_id
+		LEFT JOIN t_ferrari_role t24 on t23.role_id = t24.id
+		LEFT JOIN t_tesla_user t3 ON t1.operator_id = t3.id
+		LEFT JOIN t_ferrari_user t4 ON t1.operator_id = t4.id
+        WHERE t1.investigate_id = #{investigateId} 
+		<choose>
+			<when test="isReply==0">
+				and t1.is_agree is null
+			</when>
+			<when test="isReply==1">
+				and t1.is_agree is not null
+			</when>
+			<when test="isReply==2">
+				and t1.is_read=0
+			</when>
+			<when test="isReply==3">
+				and t1.is_read=1
+			</when>
+			<otherwise>
+			</otherwise>
+	    </choose>
+  	</select>	
+	
+	<select id="getShopInvestigateDetailById" resultType="com.home.ferrari.vo.quest.ShopInvestigate">
+		SELECT
+			t1.id id,
+			t2.shop_name shopName,
+			t1.reply_time replyTime,
+			CASE
+			WHEN t1.sub_msg_type = 2 THEN
+				t6.nick_name
+			ELSE
+				t3.nick_name
+			END replyName,
+			 t1.shop_price shopPrice,
+			 t4.msg_type msgType,
+			 t1.reply_title replyTitle,
+			 t1.reply_text replyText,
+			 t4.title title,
+			 t4.text text,
+			 t5.title templateTitle,
+			 t5.rich_text templateText,
+			 t1.is_read isRead,
+			 t1.is_agree isAgree,
+			 CASE
+				WHEN t1.is_agree IS NULL THEN 0 ELSE 1
+			  	END isReply
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t4 ON t1.investigate_id = t4.id
+		LEFT JOIN t_tesla_shop t2 ON t1.shop_id = t2.id
+		LEFT JOIN t_tesla_user t3 ON t1.operator_id = t3.id
+		LEFT JOIN t_ferrari_user t6 ON t1.operator_id = t6.id
+		LEFT JOIN t_quest_template t5 ON t4.quest_id = t5.id
+		WHERE t1.id=#{shopInvestigateId}	
+	</select>
+	
+	<select id="getShopInvestigateListByShopId" resultType="com.home.ferrari.vo.quest.QuestInvestigateCount">
+		SELECT
+		    t1.id shopInvestigateId,
+		    t1.shop_id shopId,
+		    t1.investigate_id investigateId,
+			t1.reply_title replyTitle,
+			t1.reply_text replyText,
+			t2.title title,
+			t2.text text,
+			t2.create_time createTime,
+			t2.end_time endTime,
+			t1.shop_id shopId,
+			t1.msg_type msgType,
+			t3.title templateTitle,
+			t1.is_read isRead,
+			t1.is_agree isAgree,
+			CASE
+				WHEN t1.is_agree IS NULL THEN 0 ELSE 1
+			  	END isReply
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t2 ON t1.investigate_id = t2.id
+		LEFT JOIN t_quest_template t3 ON t3.id = t2.quest_id
+		WHERE t1.shop_id = #{shopId}
+		<choose>
+			<when test="isReply==0">
+				and t1.is_agree is null
+			</when>
+			<when test="isReply==1">
+				and t1.is_agree is not null
+			</when>
+			<when test="isReply==2">
+				and t1.is_read=0
+			</when>
+			<when test="isReply==3">
+				and t1.is_read=1
+			</when>
+			<otherwise>
+			</otherwise>
+	    </choose>
+		<choose>
+			<when test="platform==0">
+				and t1.sub_msg_type=2
+			</when>
+			<when test="platform==1">
+				and t1.sub_msg_type!=2
+			</when>
+			<otherwise>
+			</otherwise>
+	    </choose>
+	</select>
+	<select id="countShopInvestigateListByShopId" resultType="int">
+		SELECT count(*)
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t2 ON t1.investigate_id = t2.id
+		WHERE t1.shop_id = #{shopId}
+		<choose>
+			<when test="isReply==0">
+				and t1.is_agree is null
+			</when>
+			<when test="isReply==1">
+				and t1.is_agree is not null
+			</when>
+			<when test="isReply==2">
+				and t1.is_read=0
+			</when>
+			<when test="isReply==3">
+				and t1.is_read=1
+			</when>
+			<otherwise>
+			</otherwise>
+	    </choose>
+		<choose>
+			<when test="platform==0">
+				and t1.sub_msg_type=2
+			</when>
+			<when test="platform==1">
+				and t1.sub_msg_type!=2
+			</when>
+			<otherwise>
+			</otherwise>
+	    </choose>
+	</select>
+	
+	<select id="getExportMessageByMsgType" resultType="map">
+		SELECT
+			t2.title title,
+			t3.shop_name shopName,
+			t3.company_name companyName,
+			t3.province province,
+			t3.city city,
+			t1.reply_title replyTitle,
+			t1.reply_text replyText,
+			t1.is_read isRead,
+			t1.is_agree isAgree
+		FROM
+			t_shop_investigate t1
+		JOIN t_quest_investigate t2
+		JOIN t_tesla_shop t3
+		WHERE
+			t1.investigate_id = t2.id
+		AND t1.shop_id = t3.id
+		AND t1.msg_type = #{msgType}
+	</select>
+</mapper>

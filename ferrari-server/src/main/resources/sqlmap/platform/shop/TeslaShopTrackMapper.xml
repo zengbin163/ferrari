@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.shop.TeslaShopTraceDao">
+	<insert id="insertTeslaShopTrace" parameterType="com.home.ferrari.vo.tesla.shop.TeslaShopTrace" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_tesla_shop_trace (
+			shop_id,
+			ferrari_user_id,
+			ferrari_nick_name,
+			operate_type,
+			role_type,
+			is_remark,
+			shop_expand_status,
+			shop_status,
+			remark,
+			create_time
+		)
+		VALUES(
+			#{shopId},
+			#{ferrariUserId},
+			#{ferrariNickName},
+			#{operateType},
+			#{roleType},
+			#{isRemark},
+			#{shopExpandStatus},
+			#{shopStatus},
+			#{remark},
+			NOW()
+		)
+	</insert>
+	
+	<select id="getShopRemarkListByShopId" resultType="com.home.ferrari.vo.tesla.shop.TeslaShopTrace">
+		select 
+			shop_id shopId,
+			ferrari_user_id ferrariUserId,
+			ferrari_nick_name ferrariNickName,
+			operate_type operateType,
+			role_type roleType,
+			remark remark,
+			create_time createTime
+		from t_tesla_shop_trace 
+		where shop_id=#{shopId}
+			 and is_remark=1
+			 <if test="roleType!=null">
+			 	and role_type = #{roleType}
+			 </if>
+		order by create_time DESC
+	</select>
+</mapper>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.crmdao.report.CrmCustomerReportDao">
+ 	<select id="getCrmBatchList" resultType="com.home.ferrari.vo.crm.CrmBatch">
+		SELECT DISTINCT
+			t1.batch_code batchCode,
+			t1.create_time createTime,
+			t2.crm_operator_id crmOperatorId
+		FROM
+			t_crm_batch t1
+		JOIN t_crm_customer t2 ON t1.batch_code = t2.crm_batch_code
+		LEFT JOIN t_crm_user t3 ON t2.crm_user_id = t3.id
+		<where>
+			t2.crm_operator_id = #{crmOperatorId}
+			<if test="year!=null"> 
+				and t1.year = #{year}
+			</if>
+			<if test="month!=null"> 
+				and t1.month = #{month}
+			</if>
+			<if test="seed!=null"> 
+				and t1.seed = #{seed}
+			</if>
+			<if test="userName!=null"> 
+				and t3.user_name = #{userName}
+			</if>
+			<if test="uploadStatus!=null"> 
+				and t2.upload_status = #{uploadStatus}
+			</if>
+			<if test="crmUserIdList!=null">
+				 and (t2.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+				 or t2.crm_user_id is NULL)
+			</if>	
+			<if test="keyword!=null"> 
+				and (
+					t2.license_plate like CONCAT('%',#{keyword},'%')
+					or
+					t2.link_phone like CONCAT('%',#{keyword},'%')
+					or
+					t2.customer_name like CONCAT('%',#{keyword},'%')
+					)
+			</if>
+		</where>
+		GROUP BY
+			t1.batch_code
+	</select>
+ 	<select id="countCrmBatchList" resultType="int">
+		SELECT count(*) from (
+			SELECT DISTINCT
+				t1.batch_code batchCode,
+				t1.create_time createTime,
+				t2.crm_operator_id crmOperatorId
+			FROM
+				t_crm_batch t1
+			JOIN t_crm_customer t2 ON t1.batch_code = t2.crm_batch_code
+			LEFT JOIN t_crm_user t3 ON t2.crm_user_id = t3.id
+			<where>
+				t2.crm_operator_id = #{crmOperatorId}
+				<if test="year!=null"> 
+					and t1.year = #{year}
+				</if>
+				<if test="month!=null"> 
+					and t1.month = #{month}
+				</if>
+				<if test="seed!=null"> 
+					and t1.seed = #{seed}
+				</if>
+				<if test="userName!=null"> 
+					and t3.user_name = #{userName}
+				</if>
+				<if test="uploadStatus!=null"> 
+					and t2.upload_status = #{uploadStatus}
+				</if>
+				<if test="crmUserIdList!=null">
+					 and (t2.crm_user_id in
+					 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+					  	#{item}
+					 </foreach>
+					 or t2.crm_user_id is NULL)
+				</if>	
+				<if test="keyword!=null"> 
+					and (
+						t2.license_plate like CONCAT('%',#{keyword},'%')
+						or
+						t2.link_phone like CONCAT('%',#{keyword},'%')
+						or
+						t2.customer_name like CONCAT('%',#{keyword},'%')
+						)
+				</if>
+			</where>
+			GROUP BY
+				t1.batch_code
+		) t
+	</select>
+ 	
+	<select id="getUploadStatusReport" resultType="map">
+		SELECT
+			t.upload_status uploadStatus,
+			count(*) sum
+		FROM
+			t_crm_customer t
+		<where>
+			<if test="adminId!=null">
+				and t.crm_operator_id = #{adminId}
+			</if>
+			<if test="batchCode!=null">
+				and t.crm_batch_code = #{batchCode}
+			</if>
+			<if test="crmUserIdList!=null">
+				 and (t.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+				  or t.crm_user_id is null)
+			</if>	
+		</where> 	
+		GROUP BY
+			t.upload_status
+	</select>
+
+	<select id="getBizTypeReport" resultType="map">
+		SELECT
+			t2.biz_type bizType,
+			count(*) sum
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_cust_biztype t2 ON t1.id = t2.crm_customer_id
+		<where>
+		    t1.upload_status != 0
+			<if test="batchCode!=null">
+				and t1.crm_batch_code = #{batchCode}
+			</if>
+			<if test="purpose!=null">
+				and t1.purpose = #{purpose}
+			</if>
+			<if test="crmUserIdList!=null">
+				 and t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+		</where> 	
+		GROUP BY t2.biz_type	
+	</select>
+	
+	<select id="sumFollowedCust" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_customer t1
+		WHERE
+			t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 and t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>	
+		AND EXISTS (
+			SELECT
+				*
+			FROM
+				t_crm_cust_trace t2
+			WHERE
+				t1.id = t2.crm_customer_id
+		)
+	</select>
+	<select id="sumTodayRemindCust" resultType="int">
+		SELECT
+			count(distinct t1.id)
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_cust_remaind t2 ON t1.id = t2.crm_customer_id
+		WHERE
+		    t1.upload_status != 0
+		<if test="crmUserIdList!=null">
+			 and t1.crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+		</if>	
+		<![CDATA[
+			AND (t2.remind_time between concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 00:00:00') 
+					AND concat(DATE_FORMAT(NOW(),'%Y-%m-%d'),' 23:59:59'))
+		]]>	
+	</select>
+	
+	<select id="sumTotalCustomer" resultType="int">
+		SELECT count(*) 
+			FROM t_crm_customer 
+		WHERE upload_status != 0
+		  <if test="crmUserIdList!=null">
+				 and crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+		  </if>
+		  <if test="purpose != null">
+			  and purpose = #{purpose}
+		  </if>
+		  <if test="bizType != null">
+			  and biz_type = #{bizType}
+		  </if>
+	</select>
+	<select id="sumCustomerByBizAdmin" resultType="com.home.ferrari.vo.crm.CrmCustCount">
+		SELECT
+			t2.id crmUserId,
+			t2.user_name crmUserName,
+			count(*) sum
+		FROM
+			t_crm_customer t1
+		JOIN t_crm_user t2 ON t1.crm_user_id = t2.id
+		<where>
+			t1.upload_status != 0
+		    <if test="crmUserIdList!=null">
+				 and t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+		    </if>
+		</where> 	
+		GROUP BY t2.id,t2.user_name	
+		ORDER BY count(*) ASC
+	</select>
+	<select id="sumPurposeCustomerByBizAdminId" resultType="map">
+		SELECT purpose purpose,
+			   count(*) sum
+		FROM t_crm_customer 
+		WHERE upload_status != 0
+	    <if test="crmUserIdList!=null">
+			 and crm_user_id in
+			 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+			  	#{item}
+			 </foreach>
+	    </if>
+	    GROUP BY purpose
+	</select>
+	
+	<select id="sumCustomerSuccess" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			t_crm_cust_purpose t
+		JOIN t_crm_customer t1 ON t.customer_id = t1.id
+		WHERE
+			t1.upload_status != 0
+			<if test="crmUserIdList!=null">
+				 and t1.crm_user_id in
+				 <foreach item="item" index="index" collection="crmUserIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="purpose != null">
+				 and t.purpose = #{purpose}
+			</if>
+	</select>
+</mapper>

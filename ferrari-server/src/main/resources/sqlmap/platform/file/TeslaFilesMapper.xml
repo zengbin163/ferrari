@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.file.TeslaFilesDao">
+
+	<insert id="insertTeslaFiles" parameterType="com.home.ferrari.vo.file.TeslaFiles" useGeneratedKeys="true" keyProperty="fileTypeId">
+		insert into t_tesla_files(
+			shop_id,
+			file_type,
+			file_suffix,
+			file_urls,
+			create_time,
+			modify_time
+		) values (
+			#{shopId},
+			#{fileType},
+			#{fileSuffix},
+			#{fileUrls},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<select id="getTeslaFilesByShopId" resultType="com.home.ferrari.vo.file.TeslaFiles">
+		SELECT
+		    file_type_id fileTypeId,
+			shop_id shopId,
+			file_type fileType,
+			file_suffix fileSuffix,
+			file_urls fileUrls,
+			create_time createTime,
+			modify_time modifyTime
+		FROM t_tesla_files
+		where shop_id=#{shopId}
+		<if test="fileType!=null">
+			and file_type=#{fileType}
+		</if>
+	</select>
+	<select id="countTeslaFilesByShopId" resultType="int">
+		SELECT count(*)
+		FROM t_tesla_files
+		where shop_id=#{shopId}
+		<if test="fileType!=null">
+			and file_type=#{fileType}
+		</if>
+	</select>
+</mapper>

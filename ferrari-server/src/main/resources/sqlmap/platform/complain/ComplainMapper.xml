@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.complain.ComplainDao">
+
+	<insert id="insertComplain" parameterType="com.home.ferrari.vo.complain.Complain" useGeneratedKeys="true" keyProperty="complainId">
+		insert into t_complain(
+			complain_type,
+			complain_sub_type,
+			complain_status,
+			complain_reason,
+			is_right,
+			complain_name,
+			complain_phone,
+			operator_id,
+			shop_id,
+			biz_order_id,
+			complain_degree,
+			be_complain_name,
+			be_complain_job,
+			text,
+			create_time,
+			modify_time
+		) values (
+			#{complainType},
+			#{complainSubType},
+			#{complainStatus},
+			#{complainReason},
+			#{isRight},
+			#{complainName},
+			#{complainPhone},
+			#{operatorId},
+			#{shopId},
+			#{bizOrderId},
+			#{complainDegree},
+			#{beComplainName},
+			#{beComplainJob},
+			#{text},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertComplainBatch" parameterType="com.home.ferrari.vo.complain.Complain">
+		insert into t_complain(
+			complain_type,
+			complain_sub_type,
+			complain_status,
+			complain_reason,
+			is_right,
+			complain_name,
+			complain_phone,
+			operator_id,
+			shop_id,
+			biz_order_id,
+			complain_degree,
+			be_complain_name,
+			be_complain_job,
+			text,
+			create_time,
+			modify_time
+		) values 
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	    (
+	        #{item.complainType},
+	        #{item.complainSubType},
+	        #{item.complainStatus},
+	        #{item.complainReason},
+	        #{item.isRight},
+	        #{item.complainName},
+	        #{item.complainPhone},
+	        #{item.operatorId},
+	        #{item.shopId},
+	        #{item.bizOrderId},
+	        #{item.complainDegree},
+	        #{item.beComplainName},
+	        #{item.beComplainJob},
+	        #{item.text},
+			#{item.createTime},
+			#{item.modifyTime}
+	    )  
+	    </foreach>  
+	</insert>
+		
+	<update id="updateComplain" parameterType="com.home.ferrari.vo.complain.Complain">
+		update t_complain set modify_time = NOW()
+		<if test="complainType!=null">
+			,complain_type = #{complainType}
+		</if>
+		<if test="complainSubType!=null">
+			,complain_sub_type = #{complainSubType}
+		</if>
+		<if test="complainStatus!=null">
+			,complain_status = #{complainStatus}
+		</if>
+		<if test="complainReason!=null">
+			,complain_reason = #{complainReason}
+		</if>
+		<if test="isRight!=null">
+			,is_right = #{isRight}
+		</if>
+		<if test="isFixed!=null">
+			,is_fixed = #{isFixed}
+		</if>
+		<if test="complainName!=null">
+			,complain_name = #{complainName}
+		</if>
+		<if test="complainPhone!=null">
+			,complain_phone = #{complainPhone}
+		</if>
+		<if test="shopId!=null">
+			,shop_id = #{shopId}
+		</if>
+		<if test="bizOrderId!=null">
+			,biz_order_id = #{bizOrderId}
+		</if>
+		<if test="complainDegree!=null">
+			,complain_degree = #{complainDegree}
+		</if>
+		<if test="beComplainName!=null">
+			,be_complain_name = #{beComplainName}
+		</if>
+		<if test="beComplainJob!=null">
+			,be_complain_job = #{beComplainJob}
+		</if>
+		<if test="text!=null">
+			,text = #{text}
+		</if>
+		<![CDATA[
+			where id = #{complainId}
+		]]>	
+	</update>
+	
+	<insert id="insertComplainTrace" parameterType="com.home.ferrari.vo.complain.ComplainTrace" useGeneratedKeys="true" keyProperty="id">
+		insert into t_complain_trace(
+			shop_id,
+			operator_id,
+			complain_id,
+			remark_type,
+			remark,
+			create_time,
+			modify_time
+		) values (
+			#{shopId},
+			#{operatorId},
+			#{complainId},
+			#{remarkType},
+			#{remark},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<sql id="getComplain">
+	   select
+	        id complainId,
+			complain_type complainType,
+			complain_sub_type complainSubType,
+			complain_status complainStatus,
+			complain_reason complainReason,
+			is_right isRight,
+			is_fixed isFixed,
+			complain_name complainName,
+			complain_phone complainPhone,
+			operator_id operatorId,
+			shop_id shopId,
+			biz_order_id bizOrderId,
+			complain_degree complainDegree,
+			be_complain_name beComplainName,
+			be_complain_job beComplainJob,
+			text text,
+			create_time createTime,
+			modify_time modifyTime
+		from t_complain
+	</sql>
+	
+	<select id="getComplainList" resultType="com.home.ferrari.vo.complain.Complain">
+	   select
+	        t1.id complainId,
+			t1.complain_type complainType,
+			t1.complain_sub_type complainSubType,
+			t1.complain_status complainStatus,
+			t1.complain_reason complainReason,
+			t1.is_right isRight,
+			t1.is_fixed isFixed,
+			t1.complain_name complainName,
+			t1.complain_phone complainPhone,
+			t1.operator_id operatorId,
+			t1.shop_id shopId,
+			t1.biz_order_id bizOrderId,
+			t1.complain_degree complainDegree,
+			t1.be_complain_name beComplainName,
+			t1.be_complain_job beComplainJob,
+			t1.text text,
+			t1.create_time createTime,
+			t1.modify_time modifyTime,
+			t2.shop_name shopName,
+			t3.resource_desc complainReasonDesc
+		<include refid="complainListWhere" />	
+	</select>
+	<select id="countComplainList" resultType="int">
+		select count(*) 
+		<include refid="complainListWhere" />	
+	</select>
+	<select id="getComplainGroupList" resultType="map">
+		SELECT
+			t1.complain_status complainStatus,
+			count(*) sum
+			<include refid="complainListWhere" />
+			GROUP BY t1.complain_status
+	</select>
+	<sql id="complainListWhere">
+		from t_complain t1 
+			LEFT JOIN t_tesla_shop t2 on t1.shop_id = t2.id
+			JOIN t_resource t3 ON t1.complain_reason = t3.resource_value and t3.resource_key = 'complain_reason_key'
+		<where>
+			<if test="complainType!=null">
+				t1.complain_type=#{complainType}
+			</if>
+			<if test="isFixed!=null">
+				and t1.is_fixed=#{isFixed}
+			</if>
+	        <if test="beginTime!=null and endTime!=null">
+		        and t1.create_time BETWEEN #{beginTime} and date_add(#{endTime},INTERVAL 1 MINUTE)
+		    </if>    
+			<if test="isRight!=null">
+				and t1.is_right=#{isRight}
+			</if>
+			<if test="complainStatus!=null">
+				and t1.complain_status=#{complainStatus}
+			</if>
+			<if test="complainDegree!=null">
+				and t1.complain_degree=#{complainDegree}
+			</if>
+			<if test="bizOrderId!=null">
+				and t1.biz_order_id=#{bizOrderId}
+			</if>
+			<if test="shopIdList!=null">
+			    and t1.shop_id in
+				 <foreach item="item" index="index" collection="shopIdList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+		</where>
+	</sql>
+	
+	<select id="getComplainDetailById" resultType="com.home.ferrari.vo.complain.Complain">
+	   select
+	        t1.id complainId,
+			t1.complain_type complainType,
+			t1.complain_sub_type complainSubType,
+			t1.complain_status complainStatus,
+			t1.complain_reason complainReason,
+			t1.is_right isRight,
+			t1.is_fixed isFixed,
+			t1.complain_name complainName,
+			t1.complain_phone complainPhone,
+			t1.operator_id operatorId,
+			t1.shop_id shopId,
+			t1.biz_order_id bizOrderId,
+			t1.complain_degree complainDegree,
+			t1.be_complain_name beComplainName,
+			t1.be_complain_job beComplainJob,
+			t1.text text,
+			t1.create_time createTime,
+			t1.modify_time modifyTime,
+			t2.shop_name shopName,
+			t3.resource_desc complainReasonDesc
+		from t_complain t1 
+			LEFT JOIN t_tesla_shop t2 on t1.shop_id = t2.id
+			JOIN t_resource t3 ON t1.complain_reason = t3.resource_value and t3.resource_key = 'complain_reason_key'
+		where t1.id=#{complainId}
+	</select>
+	
+	<select id="getRemindComplainList" resultType="com.home.ferrari.vo.complain.Complain">
+		<include refid="getComplain" />
+		<![CDATA[
+			WHERE
+				(
+					(
+						UNIX_TIMESTAMP(create_time) * 1000 + 14400000 < UNIX_TIMESTAMP() * 1000
+					)
+					AND (
+						UNIX_TIMESTAMP(create_time) * 1000 + 43200000 > UNIX_TIMESTAMP() * 1000
+					)
+				)
+			AND complain_status = 700
+		]]>	
+	</select>
+	
+	<select id="countRemindComplainList" resultType="int">
+		select count(*) from t_complain
+		<![CDATA[
+			WHERE
+				(
+					(
+						UNIX_TIMESTAMP(create_time) * 1000 + 14400000 < UNIX_TIMESTAMP() * 1000
+					)
+					AND (
+						UNIX_TIMESTAMP(create_time) * 1000 + 43200000 > UNIX_TIMESTAMP() * 1000
+					)
+				)
+			AND complain_status = 700
+		]]>	
+	</select>
+	
+	<select id="getComplainTraceListById" resultType="com.home.ferrari.vo.complain.ComplainTrace">
+		select id id,
+		    shop_id shopId,
+			operator_id operatorId,
+			complain_id complainId,
+			remark remark,
+			remark_type remarkType,
+			create_time createTime,
+			modify_time modifyTime
+		from t_complain_trace	
+		<where>
+			<if test="complainId!=null">
+				complain_id=#{complainId}
+			</if>
+		</where>
+		ORDER BY create_time DESC
+	</select>
+	
+	<insert id="insertComplainShop" parameterType="com.home.ferrari.vo.complain.ComplainShop" useGeneratedKeys="true" keyProperty="id">
+		insert into t_complain_shop(
+			operator_id,
+			shop_id,
+			remark,
+			create_time,
+			modify_time
+		) values (
+			#{operatorId},
+			#{shopId},
+			#{remark},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<insert id="insertOrUpdateComplainShopRemaind" parameterType="com.home.ferrari.vo.complain.ComplainShopRemaind">
+			INSERT IGNORE INTO t_complain_shop_remaind (
+			           operator_id,
+					   shop_id,
+					   is_remind,
+					   remind_time,
+					   create_time,
+					   modify_time
+			)  VALUES (
+					   #{operatorId},
+					   #{shopId},
+					   #{isRemind},
+					   #{remindTime},
+					   NOW(),
+					   NOW()
+			)   ON DUPLICATE KEY UPDATE 
+				<if test="isRemind != null">
+					is_remind = #{isRemind},
+				</if>
+				<if test="remindTime != null">
+					remind_time = #{remindTime},
+				</if>
+				modify_time = NOW()
+	</insert>
+	
+	<select id="getComplainShopListByShopId" resultType="com.home.ferrari.vo.complain.ComplainShop">
+		select t1.id id,
+			t1.operator_id operatorId,
+			t1.shop_id shopId,
+			t1.remark remark,
+			t1.create_time createTime,
+			t1.modify_time modifyTime
+		from t_complain_shop t1 join t_tesla_shop t2
+		on t1.shop_id = t2.id
+		<where>
+			<if test="shopId!=null">
+				t1.shop_id = #{shopId}
+			</if>
+			<if test="shopName!=null">
+				and t2.shop_name like CONCAT('%',#{shopName},'%' )
+			</if>
+			<if test="province!=null">
+				and t2.province = #{province}
+			</if>
+			<if test="city!=null">
+				and t2.city = #{city}
+			</if>
+		</where>
+		order by t1.modify_time DESC
+	</select>
+	
+	<select id="getRemindShopList" resultType="com.home.ferrari.vo.complain.ComplainShop">
+		select t1.id id,
+		   t3.is_remind isRemind,
+		   t3.remind_time remindTime,
+		   t2.id shopId,
+		   t2.shop_name shopName,
+		   t2.day_linker dayLinker,
+		   t2.phone phone
+		from t_tesla_shop t2 
+			left join t_complain_shop t1 on t2.id = t1.shop_id
+			left join t_complain_shop_remaind t3 on t2.id = t3.shop_id
+		<where>
+		    <if test="isThreeDay==1">
+			 <![CDATA[ 
+					UNIX_TIMESTAMP(t3.remind_time) * 1000 < UNIX_TIMESTAMP() * 1000 + 129600000
+				AND UNIX_TIMESTAMP(t3.remind_time) * 1000 > UNIX_TIMESTAMP() * 1000
+			 ]]>	
+		    </if>
+			<if test="shopStatusList!=null">
+			     and t2.shop_status in
+				 <foreach item="item" index="index" collection="shopStatusList" open="(" separator="," close=")">  
+				  	#{item}
+				 </foreach>
+			</if>	
+			<if test="shopName!=null">
+				and t2.shop_name like CONCAT('%',#{shopName},'%' )
+			</if>
+			<if test="province!=null">
+				and t2.province = #{province}
+			</if>
+			<if test="city!=null">
+				and t2.city = #{city}
+			</if>
+		</where>
+		group by t2.id
+	</select>
+	<select id="countRemindShopList" resultType="int">
+		select count(*) from (
+			select t1.id id,
+			   t3.is_remind isRemind,
+			   t3.remind_time remindTime,
+			   t2.id shopId,
+			   t2.shop_name shopName,
+			   t2.day_linker dayLinker,
+			   t2.phone phone
+			from t_tesla_shop t2 
+				left join t_complain_shop t1 on t2.id = t1.shop_id
+				left join t_complain_shop_remaind t3 on t2.id = t3.shop_id
+			<where>
+			    <if test="isThreeDay==1">
+				 <![CDATA[ 
+						UNIX_TIMESTAMP(t3.remind_time) * 1000 < UNIX_TIMESTAMP() * 1000 + 129600000
+					AND UNIX_TIMESTAMP(t3.remind_time) * 1000 > UNIX_TIMESTAMP() * 1000
+				 ]]>	
+			    </if>
+				<if test="shopStatusList!=null">
+				     and t2.shop_status in
+					 <foreach item="item" index="index" collection="shopStatusList" open="(" separator="," close=")">  
+					  	#{item}
+					 </foreach>
+				</if>	
+				<if test="shopName!=null">
+					and t2.shop_name like CONCAT('%',#{shopName},'%' )
+				</if>
+				<if test="province!=null">
+					and t2.province = #{province}
+				</if>
+				<if test="city!=null">
+					and t2.city = #{city}
+				</if>
+			</where>
+			group by t2.id
+		) xxx
+	</select>
+
+</mapper>

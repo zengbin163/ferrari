@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.home.ferrari.dao.quest.CompanyMessageDao">
+
+	<insert id="insertCompanyMessage" parameterType="com.home.ferrari.vo.quest.CompanyMessage" useGeneratedKeys="true" keyProperty="id">
+		insert into t_company_message(
+			title,
+			text,
+			operator_id,
+			ceo_id,
+			create_time,
+			modify_time
+		) values (
+			#{title},
+			#{text},
+			#{operatorId},
+			#{ceoId},
+			NOW(),
+			NOW()
+		)
+	</insert>
+
+	<select id="getCompanyMessage" resultType="com.home.ferrari.vo.quest.CompanyMessage">
+		select id id,
+			title title,
+			text text,
+			operator_id operatorId,
+			ceo_id ceoId,
+			create_time createTime,
+			modify_time modifyTime
+	    from t_company_message
+	    where ceo_id = #{ceoId}
+	</select>
+
+	<select id="countCompanyMessage" resultType="int">
+		select count(*)
+	    from t_company_message
+	    where ceo_id = #{ceoId}
+	</select>
+	
+	<select id="getQuestRoleTypeByRoleId" resultType="com.home.ferrari.vo.quest.QuestRoleType">
+		select id id,
+			   role_id roleId,
+			   msg_type msgType,
+			   create_time createTime
+	    from t_quest_role_type
+	    <where>
+			<if test="roleId!=null">
+				and role_id = #{roleId}
+			</if>	
+	    </where>
+	</select>
+</mapper>
